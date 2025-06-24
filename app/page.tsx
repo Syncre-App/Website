@@ -1,6 +1,7 @@
 "use client";
 import { Inter } from 'next/font/google';
 import { motion, Variants } from 'framer-motion';
+import Navbar from './components/Navbar';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -29,6 +30,7 @@ const itemVariants: Variants = {
 export default function Home() {
   return (
     <>
+      <Navbar />
       <main className={`flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white ${inter.className}`}>
         <motion.div 
           className="flex flex-col items-center justify-center text-center m-auto"
