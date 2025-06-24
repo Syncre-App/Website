@@ -2,46 +2,35 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 const Navbar = () => {
+  const pathname = usePathname();
+
   return (
-    <motion.nav 
-      className="fixed top-0 left-0 right-0 z-50 bg-black bg-opacity-30 backdrop-blur-lg"
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="text-white text-2xl font-bold">
-              Syncre
-            </Link>
-          </div>
-
-          {/* Primary Nav */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link href="/" className="py-2 px-3 text-gray-300 hover:text-white transition duration-300 rounded-md">
-              Home
-            </Link>
-            <Link href="/about" className="py-2 px-3 text-gray-300 hover:text-white transition duration-300 rounded-md">
-              About
-            </Link>
-            <Link href="/team" className="py-2 px-3 text-gray-300 hover:text-white transition duration-300 rounded-md">
-              Team
-            </Link>
-          </div>
-
-          {/* Secondary Nav (Login) */}
-          <div>
-            <Link href="/login" className="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition duration-300">
-              Login
-            </Link>
-          </div>
+    <div className="fixed top-[30px] w-full flex justify-center z-50 px-4">
+      <motion.nav 
+        className="w-full max-w-[1000px] h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
+        initial={{ y: -150, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <div className="flex items-center gap-x-2">
+          <Link href="/" className={`py-1.5 px-4 rounded-full text-sm font-medium transition-colors duration-300 ${pathname === '/' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'}`}>
+            Home
+          </Link>
+          <Link href="/about" className={`py-1.5 px-4 rounded-full text-sm font-medium transition-colors duration-300 ${pathname === '/about' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'}`}>
+            About
+          </Link>
+          <Link href="/team" className={`py-1.5 px-4 rounded-full text-sm font-medium transition-colors duration-300 ${pathname === '/team' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'}`}>
+            Team
+          </Link>
         </div>
-      </div>
-    </motion.nav>
+        <Link href="/login" className="py-2 px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition duration-300 text-sm">
+          Login
+        </Link>
+      </motion.nav>
+    </div>
   );
 };
 
