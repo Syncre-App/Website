@@ -1,4 +1,5 @@
-import type { Metadata } from "next";import "./globals.css";
+import type { Metadata } from "next"; import "./globals.css";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Syncre",
@@ -11,10 +12,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        {children}
-      </body>
-    </html>
+    <>
+      <Analytics />
+      <html lang="en">
+        <body>
+          {children}
+        </body>
+      </html>
+    </>
   );
 }
