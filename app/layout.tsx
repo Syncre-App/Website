@@ -3,7 +3,13 @@ import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Syncre",
-  description: "A modern, open-source, and self-hosted alternative to Notion.",
+  description: "A modern, open-source, cross-platform chat application.",
+  authors: [
+    {
+      name: "Syncre Team",
+      url: "https://git.devbeni.lol/Syncre",
+    },
+  ],
 };
 
 export default function RootLayout({
