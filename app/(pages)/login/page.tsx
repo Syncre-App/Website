@@ -3,15 +3,31 @@
 // import { FaDiscord, FaGithub, FaGoogle } from 'react-icons/fa';
 import { FaDiscord } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 
 const LoginPage = () => {
     const handleLogin = (provider: 'google' | 'discord' | 'github') => {
         if (provider === 'discord') {
-            window.location.href = `https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&response_type=code&redirect_uri=${process.env.NEXT_PUBLIC_REDIRECT_URI}&scope=${process.env.NEXT_PUBLIC_SCOPE}`;
+            //window.location.href = `https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&response_type=code&redirect_uri=${process.env.NEXT_PUBLIC_REDIRECT_URI}&scope=${process.env.NEXT_PUBLIC_SCOPE}`;
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=1387336486734532628&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fapi%2Fcallback&scope=identify+email+dm_channels.read`;
         } else {
             console.log(`Login with ${provider} is not implemented yet.`);
         }
     };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            window.location.href = '/';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('token');
+        if (code) {
+            localStorage.setItem('token', code);
+            window.location.href = '/';
+        }
+    }, []);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white p-4">
