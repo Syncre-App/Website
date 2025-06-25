@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { FiHome, FiInfo, FiUsers, FiLogIn, FiChevronDown, FiLogOut } from 'react-icons/fi';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 interface User {
@@ -19,7 +19,6 @@ const Navbar = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -49,16 +48,6 @@ const Navbar = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownRef]);
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -77,10 +66,13 @@ const Navbar = () => {
 
     if (user) {
       return (
-        <div className="relative" ref={dropdownRef}>
-          <button
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 hover:bg-white/10"
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsDropdownOpen(true)}
+          onMouseLeave={() => setIsDropdownOpen(false)}
+        >
+          <div
+            className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer"
           >
             <Image
               src={user.profile_picture}
@@ -91,7 +83,7 @@ const Navbar = () => {
             />
             <span className="text-white font-medium text-base hidden sm:block">{user.username}</span>
             <FiChevronDown size={20} className={`text-gray-300 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
+          </div>
           <AnimatePresence>
             {isDropdownOpen && (
               <motion.div
