@@ -12,6 +12,14 @@ export const metadata: Metadata = {
       url: "https://git.devbeni.lol/Syncre",
     },
   ],
+  keywords: [
+    "Syncre",
+    "Chat",
+    "Open Source",
+    "Cross Platform",
+    "Self-Hosted",
+    "Modern Chat Application",
+  ]
 };
 
 export default function RootLayout({
