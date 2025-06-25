@@ -53,7 +53,6 @@ export async function GET(request: Request) {
 
                 const user = users[0];
 
-                // A szenzitív adatokat (hash, salt, accessToken) nem küldjük vissza a kliensnek.
                 const { hash: userHash, salt: userSalt, accessToken, ...safeUserData } = user;
 
                 resolve(NextResponse.json({ user: safeUserData }, { status: 200 }));
