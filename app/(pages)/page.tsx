@@ -39,7 +39,7 @@ export default function Home() {
           animate="visible"
         >
           <motion.h1 className="text-5xl md:text-6xl font-bold mb-4" variants={itemVariants}>Syncre</motion.h1>
-          <motion.p className="text-lg md:text-xl mb-8" variants={itemVariants}>A modern, open-source, and self-hosted alternative to Notion.</motion.p>
+          <motion.p className="text-lg md:text-xl mb-8" variants={itemVariants}>A modern, open-source, cross-platform chat application.</motion.p>
         </motion.div>
       </main>
     </>
