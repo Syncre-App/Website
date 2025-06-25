@@ -12,7 +12,6 @@ export const metadata: Metadata = {
       url: "https://git.devbeni.lol/Syncre",
     },
   ],
-  themeColor: "#030712",
 };
 
 export default function RootLayout({
