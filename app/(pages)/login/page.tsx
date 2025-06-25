@@ -1,6 +1,5 @@
 "use client";
 
-// import { FaDiscord, FaGithub, FaGoogle } from 'react-icons/fa';
 import { FaDiscord } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
@@ -47,20 +46,6 @@ const LoginPage = () => {
                         <FaDiscord size={22} />
                         <span>Login with Discord</span>
                     </button>
-                    {/* <button
-                        onClick={() => handleLogin('google')}
-                        className="w-full flex items-center justify-center gap-x-3 py-3 px-4 rounded-lg bg-white text-gray-800 font-semibold hover:bg-gray-200 transition-colors duration-300"
-                    >
-                        <FaGoogle size={22} />
-                        <span>Login with Google</span>
-                    </button>
-                    <button
-                        onClick={() => handleLogin('github')}
-                        className="w-full flex items-center justify-center gap-x-3 py-3 px-4 rounded-lg bg-gray-700 text-white font-semibold hover:bg-gray-600 transition-colors duration-300"
-                    >
-                        <FaGithub size={22} />
-                        <span>Login with GitHub</span>
-                    </button> */}
                 </div>
             </motion.div>
         </div>

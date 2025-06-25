@@ -35,7 +35,6 @@ function ErrorDisplay() {
   );
 }
 
-// A hibaoldal, ami a Suspense-t biztosítja a komponens számára.
 const ErrorPage = () => {
   return (
     <Suspense fallback={<div className="min-h-screen bg-black" />}>

@@ -1,10 +1,18 @@
-import type { Metadata } from "next"; import "./globals.css";
+import type { Metadata } from "next"; 
+import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
 require('dotenv').config()
 
 export const metadata: Metadata = {
   title: "Syncre",
-  description: "A modern, open-source, and self-hosted alternative to Notion.",
+  description: "A modern, open-source, cross-platform chat application.",
+  authors: [
+    {
+      name: "Syncre Team",
+      url: "https://git.devbeni.lol/Syncre",
+    },
+  ],
+  themeColor: "#030712",
 };
 
 export default function RootLayout({
