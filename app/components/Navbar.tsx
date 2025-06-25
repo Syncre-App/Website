@@ -14,7 +14,7 @@ interface User {
   profile_picture: string;
 }
 
-const baseNavLinks = [
+const navLinks = [
   { href: '/', label: 'Home', icon: <FiHome size={18} /> },
   { href: '/about', label: 'About', icon: <FiInfo size={18} /> },
   { href: '/team', label: 'Team', icon: <FiUsers size={18} /> },
@@ -65,11 +65,6 @@ const Navbar = () => {
     setIsDropdownOpen(false);
   };
 
-  const navLinks = [...baseNavLinks];
-  if (!loading && !user) {
-    navLinks.push({ href: '/login', label: 'Login', icon: <FiLogIn size={18} /> });
-  }
-
   const renderAuthSection = () => {
     if (loading) {
       return (
@@ -105,17 +100,40 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 mt-2 w-48 bg-gray-800 border border-white/10 rounded-lg shadow-lg z-20"
-              >
+                className="absolute top-full right-0 mt-2 w-48 bg-white/5 rounded-lg shadow-lg z-20 backdrop-blur-md">
                 <ul className="py-1">
                   <li>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400 hover:bg-white/5"
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400"
                     >
                       <FiLogOut />
                       <span>Logout</span>
                     </button>
+                  </li>
+                  <li>
+                    <Link
+                      href="/settings"
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors duration-300"
+                    >
+                      <span>Settings</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/profile"
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors duration-300"
+                    >
+                      <span>Profile</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/contacts"
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors duration-300"
+                    >
+                      <span>Chats</span>
+                    </Link>
                   </li>
                 </ul>
               </motion.div>
@@ -124,29 +142,41 @@ const Navbar = () => {
         </div>
       );
     }
-    return null;
+
+    return (
+      <Link
+        href="/login"
+        onMouseEnter={() => setActivePath('/login')}
+        className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === '/login' ? 'text-white' : 'text-gray-300 hover:text-white'
+          }`}
+      >
+        {activePath === '/login' && (
+          <motion.div
+            layoutId="active-nav-pill"
+            className="absolute inset-0 bg-blue-600 rounded-full"
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          />
+        )}
+        <span className="relative z-10"><FiLogIn size={18} /></span>
+        <span className="relative z-10">Login</span>
+      </Link>
+    );
   };
 
   return (
     <div className="fixed top-[30px] w-full flex justify-center z-50 px-4">
-      <motion.nav
+      <nav
         className="w-full max-w-[1000px] h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
-        initial={{ y: -150, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        onMouseLeave={() => setActivePath(pathname)}
       >
-        <div
-          className="flex items-center gap-x-2"
-          onMouseLeave={() => setActivePath(pathname)}
-        >
+        <div className="flex items-center gap-x-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onMouseEnter={() => setActivePath(link.href)}
-              className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${
-                activePath === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
-              }`}
+              className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
+                }`}
             >
               {activePath === link.href && (
                 <motion.div
@@ -161,7 +191,7 @@ const Navbar = () => {
           ))}
         </div>
         {renderAuthSection()}
-      </motion.nav>
+      </nav>
     </div>
   );
 };
