@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { FiHome, FiInfo, FiUsers, FiLogIn, FiChevronDown, FiLogOut } from 'react-icons/fi';
+import { FiHome, FiInfo, FiUsers, FiLogIn, FiChevronDown, FiLogOut, FiSettings, FiUser, FiMessageSquare } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
@@ -100,40 +100,44 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 mt-2 w-48 bg-white/5 rounded-lg shadow-lg z-20 backdrop-blur-md">
+                className="absolute top-full right-0 mt-2 w-48 bg-white/5 border border-white/10 rounded-lg shadow-lg z-20"
+              >
                 <ul className="py-1">
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400"
-                    >
-                      <FiLogOut />
-                      <span>Logout</span>
-                    </button>
-                  </li>
                   <li>
                     <Link
                       href="/settings"
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors duration-300"
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
                     >
+                      <FiSettings />
                       <span>Settings</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/profile"
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors duration-300"
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
                     >
+                      <FiUser />
                       <span>Profile</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/contacts"
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors duration-300"
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
                     >
+                      <FiMessageSquare />
                       <span>Chats</span>
                     </Link>
+                  </li>
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400 hover:bg-white/5"
+                    >
+                      <FiLogOut />
+                      <span>Logout</span>
+                    </button>
                   </li>
                 </ul>
               </motion.div>
