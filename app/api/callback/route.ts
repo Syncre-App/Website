@@ -90,14 +90,14 @@ export async function GET(request: NextRequest) {
             }
 
             const userIdWithSalt = `${user.hash}:${user.salt}`;
-            const token = jwt.sign({ userid: userIdWithSalt }, process.env.JWT_SECRET!, { expiresIn: '2d' });
+            const token = jwt.sign({ token: userIdWithSalt }, process.env.JWT_SECRET!, { expiresIn: '2d' });
             return NextResponse.redirect(new URL(`/login?token=${token}`, request.url));
         } else {
             const salt = crypto.randomBytes(16).toString('hex');
             const hash = crypto.createHash('sha256').update(userId + salt).digest('hex');
             const userIdWithSalt = `${hash}:${salt}`;
 
-            const token = jwt.sign({ userid: userIdWithSalt }, process.env.JWT_SECRET!, { expiresIn: '2d' });
+            const token = jwt.sign({ token: userIdWithSalt }, process.env.JWT_SECRET!, { expiresIn: '2d' });
 
             const newUser = {
                 id: userId,

@@ -1,16 +1,135 @@
 "use client";
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { FiHome, FiInfo, FiUsers, FiLogIn } from 'react-icons/fi';
+import { FiHome, FiInfo, FiUsers, FiLogIn, FiChevronDown, FiLogOut } from 'react-icons/fi';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
+
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  profile_picture: string;
+}
 
 const Navbar = () => {
   const pathname = usePathname();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const fetchUserData = async () => {
+        try {
+          const res = await fetch('/api/users/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setUser(data.user);
+          } else {
+            localStorage.removeItem('token');
+            setUser(null);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user data", error);
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchUserData();
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setIsDropdownOpen(false);
+  };
+
+  const renderAuthSection = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center gap-x-2 animate-pulse">
+          <div className="h-10 w-10 rounded-full bg-white/10"></div>
+          <div className="h-4 w-20 rounded bg-white/10"></div>
+        </div>
+      );
+    }
+
+    if (user) {
+      return (
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 hover:bg-white/10"
+          >
+            <Image
+              src={user.profile_picture}
+              alt={user.username}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <span className="text-white font-medium text-base hidden sm:block">{user.username}</span>
+            <FiChevronDown size={20} className={`text-gray-300 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-full right-0 mt-2 w-48 bg-gray-800 border border-white/10 rounded-lg shadow-lg"
+              >
+                <ul className="py-1">
+                  <li>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400 hover:bg-white/5"
+                    >
+                      <FiLogOut />
+                      <span>Logout</span>
+                    </button>
+                  </li>
+                </ul>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      );
+    }
+
+    return (
+      <Link href="/login" className="flex items-center gap-x-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition duration-300 text-base">
+        <FiLogIn size={18} />
+        <span>Login</span>
+      </Link>
+    );
+  };
 
   return (
     <div className="fixed top-[30px] w-full flex justify-center z-50 px-4">
-      <motion.nav 
+      <motion.nav
         className="w-full max-w-[1000px] h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
         initial={{ y: -150, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -30,10 +149,7 @@ const Navbar = () => {
             <span>Team</span>
           </Link>
         </div>
-        <Link href="/login" className="flex items-center gap-x-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition duration-300 text-base">
-          <FiLogIn size={18} />
-          <span>Login</span>
-        </Link>
+        {renderAuthSection()}
       </motion.nav>
     </div>
   );

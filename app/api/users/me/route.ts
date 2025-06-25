@@ -10,8 +10,13 @@ export async function GET(request: Request) {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-        const userId = (decoded as any).id;
+        const decodedPayload = jwt.verify(token, process.env.JWT_SECRET!) as { token: string };
+        
+        const [hash, salt] = decodedPayload.token.split(':');
+
+        if (!hash || !salt) {
+            return NextResponse.json({ error: 'Invalid token payload' }, { status: 400 });
+        }
 
         return new Promise<NextResponse>((resolve) => {
             const connection = createConnection({
@@ -29,8 +34,8 @@ export async function GET(request: Request) {
                 }
             });
 
-            const query = 'SELECT * FROM users WHERE id = ?';
-            connection.query(query, [userId], (error, results) => {
+            const query = 'SELECT * FROM users WHERE hash = ? AND salt = ?';
+            connection.query(query, [hash, salt], (error, results) => {
                 connection.end();
 
                 if (error) {
@@ -48,7 +53,8 @@ export async function GET(request: Request) {
 
                 const user = users[0];
 
-                const { hash, salt, accessToken, ...safeUserData } = user;
+                // A szenzitív adatokat (hash, salt, accessToken) nem küldjük vissza a kliensnek.
+                const { hash: userHash, salt: userSalt, accessToken, ...safeUserData } = user;
 
                 resolve(NextResponse.json({ user: safeUserData }, { status: 200 }));
             });
