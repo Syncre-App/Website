@@ -26,17 +26,6 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        // const createTableQuery = `
-        //     CREATE TABLE IF NOT EXISTS users (
-        //         id INT AUTO_INCREMENT PRIMARY KEY,
-        //         userid VARCHAR(255) NOT NULL UNIQUE,
-        //         email VARCHAR(255) NOT NULL,
-        //         profile_picture VARCHAR(255),
-        //         username VARCHAR(255) NOT NULL,
-        //         friends TEXT
-        //     )
-        // `;
-
         const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
             method: 'POST',
             headers: {
@@ -71,34 +60,13 @@ export async function GET(request: NextRequest) {
         }
         const userData = await userResponse.json();
 
-        const dmsResponse = await fetch('https://discord.com/api/users/@me/channels', {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
-
-        if (!dmsResponse.ok) {
-            return NextResponse.redirect(new URL(`/error?error=Failed to fetch DMs.`, request.url));
-        }
-        const dmsData = await dmsResponse.json();
-
         const profilePictureUrl = userData.avatar
             ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`
             : `https://cdn.discordapp.com/embed/avatars/${parseInt(userData.discriminator) % 5}.png`;
 
-        const friends = dmsData
-            .filter((dm: any) => dm.type === 1)
-            .map((dm: any) => ({
-                id: dm.recipients[0].id,
-                username: dm.recipients[0].username,
-                avatar: dm.recipients[0].avatar
-                    ? `https://cdn.discordapp.com/avatars/${dm.recipients[0].id}/${dm.recipients[0].avatar}.png`
-                    : `https://cdn.discordapp.com/embed/avatars/${parseInt(dm.recipients[0].discriminator) % 5}.png`,
-            }));
-
         const userId = userData.id;
         const existingUser = await new Promise<any[]>((resolve, reject) => {
-            connection.query('SELECT * FROM users WHERE userid = ?', [userId], (error, results) => {
+            connection.query('SELECT * FROM users WHERE id = ?', [userId], (error, results) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -109,6 +77,18 @@ export async function GET(request: NextRequest) {
 
         if (existingUser.length > 0) {
             const user = existingUser[0];
+            if (user.accessToken !== accessToken) {
+                await new Promise<void>((resolve, reject) => {
+                    connection.query('UPDATE users SET accessToken = ? WHERE id = ?', [accessToken, userId], (error) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            }
+
             const userIdWithSalt = `${user.hash}:${user.salt}`;
             const token = jwt.sign({ userid: userIdWithSalt }, process.env.JWT_SECRET!, { expiresIn: '2d' });
             return NextResponse.redirect(new URL(`/login?token=${token}`, request.url));
@@ -126,7 +106,8 @@ export async function GET(request: NextRequest) {
                 email: userData.email,
                 profile_picture: profilePictureUrl,
                 username: userData.username,
-                friends: JSON.stringify(friends),
+                friends: JSON.stringify([]),
+                accessToken: accessToken,
             };
             await new Promise<void>((resolve, reject) => {
                 connection.query('INSERT INTO users SET ?', newUser, (error) => {
