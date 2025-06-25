@@ -14,11 +14,22 @@ interface User {
   profile_picture: string;
 }
 
+const baseNavLinks = [
+  { href: '/', label: 'Home', icon: <FiHome size={18} /> },
+  { href: '/about', label: 'About', icon: <FiInfo size={18} /> },
+  { href: '/team', label: 'Team', icon: <FiUsers size={18} /> },
+];
+
 const Navbar = () => {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activePath, setActivePath] = useState(pathname);
+
+  useEffect(() => {
+    setActivePath(pathname);
+  }, [pathname]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -54,6 +65,11 @@ const Navbar = () => {
     setIsDropdownOpen(false);
   };
 
+  const navLinks = [...baseNavLinks];
+  if (!loading && !user) {
+    navLinks.push({ href: '/login', label: 'Login', icon: <FiLogIn size={18} /> });
+  }
+
   const renderAuthSection = () => {
     if (loading) {
       return (
@@ -66,14 +82,12 @@ const Navbar = () => {
 
     if (user) {
       return (
-        <div 
+        <div
           className="relative"
           onMouseEnter={() => setIsDropdownOpen(true)}
           onMouseLeave={() => setIsDropdownOpen(false)}
         >
-          <div
-            className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer"
-          >
+          <div className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer">
             <Image
               src={user.profile_picture}
               alt={user.username}
@@ -91,7 +105,7 @@ const Navbar = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 mt-2 w-48 bg-white/5 border border-white/10 rounded-lg shadow-lg"
+                className="absolute top-full right-0 mt-2 w-48 bg-gray-800 border border-white/10 rounded-lg shadow-lg z-20"
               >
                 <ul className="py-1">
                   <li>
@@ -110,13 +124,7 @@ const Navbar = () => {
         </div>
       );
     }
-
-    return (
-      <Link href="/login" className="flex items-center gap-x-2 py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition duration-300 text-base">
-        <FiLogIn size={18} />
-        <span>Login</span>
-      </Link>
-    );
+    return null;
   };
 
   return (
@@ -127,19 +135,30 @@ const Navbar = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <div className="flex items-center gap-x-4">
-          <Link href="/" className={`flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${pathname === '/' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'}`}>
-            <FiHome size={18} />
-            <span>Home</span>
-          </Link>
-          <Link href="/about" className={`flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${pathname === '/about' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'}`}>
-            <FiInfo size={18} />
-            <span>About</span>
-          </Link>
-          <Link href="/team" className={`flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${pathname === '/team' ? 'text-white bg-white/10' : 'text-gray-300 hover:text-white'}`}>
-            <FiUsers size={18} />
-            <span>Team</span>
-          </Link>
+        <div
+          className="flex items-center gap-x-2"
+          onMouseLeave={() => setActivePath(pathname)}
+        >
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onMouseEnter={() => setActivePath(link.href)}
+              className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${
+                activePath === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
+              }`}
+            >
+              {activePath === link.href && (
+                <motion.div
+                  layoutId="active-nav-pill"
+                  className="absolute inset-0 bg-blue-600 rounded-full"
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                />
+              )}
+              <span className="relative z-10">{link.icon}</span>
+              <span className="relative z-10">{link.label}</span>
+            </Link>
+          ))}
         </div>
         {renderAuthSection()}
       </motion.nav>
