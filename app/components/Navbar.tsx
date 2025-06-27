@@ -77,72 +77,83 @@ const Navbar = () => {
 
     if (user) {
       return (
-        <div
-          className="relative"
-          onMouseEnter={() => setIsDropdownOpen(true)}
-          onMouseLeave={() => setIsDropdownOpen(false)}
-        >
-          <div className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer">
-            <Image
-              src={user.profile_picture}
-              alt={user.username}
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-            <span className="text-white font-medium text-base hidden sm:block">{user.username}</span>
-            <FiChevronDown size={20} className={`text-gray-300 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-          </div>
-          <AnimatePresence>
-            {isDropdownOpen && (
+        <div className="flex items-center gap-x-2">
+          <Link
+            href="/contacts"
+            onMouseEnter={() => setActivePath('/contacts')}
+            className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === '/contacts' ? 'text-white' : 'text-gray-300 hover:text-white'}`}
+          >
+            {activePath === '/contacts' && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 mt-2 w-48 bg-white/5 border border-white/10 rounded-lg shadow-lg z-20"
-              >
-                <ul className="py-1">
-                  <li>
-                    <Link
-                      href="/settings"
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
-                    >
-                      <FiSettings />
-                      <span>Settings</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/profile"
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
-                    >
-                      <FiUser />
-                      <span>Profile</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/contacts"
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
-                    >
-                      <FiMessageSquare />
-                      <span>Chats</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400 hover:bg-white/5"
-                    >
-                      <FiLogOut />
-                      <span>Logout</span>
-                    </button>
-                  </li>
-                </ul>
-              </motion.div>
+                layoutId="active-nav-pill"
+                className="absolute inset-0 bg-blue-600 rounded-full"
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              />
             )}
-          </AnimatePresence>
+            <span className="relative z-10"><FiMessageSquare size={18} /></span>
+            <span className="relative z-10">Chats</span>
+          </Link>
+          <div
+            className="relative"
+            onMouseEnter={() => {
+              setActivePath('');
+              setIsDropdownOpen(true);
+            }}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
+            <div className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer">
+              <Image
+                src={user.profile_picture}
+                alt={user.username}
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <span className="text-white font-medium text-base hidden sm:block">{user.username}</span>
+              <FiChevronDown size={20} className={`text-gray-300 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </div>
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute top-full right-0 mt-2 w-48 bg-white/5 border border-white/10 rounded-lg shadow-lg z-20"
+                >
+                  <ul className="py-1">
+                    <li>
+                      <Link
+                        href="/settings"
+                        className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
+                      >
+                        <FiSettings />
+                        <span>Settings</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/profile"
+                        className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
+                      >
+                        <FiUser />
+                        <span>Profile</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400 hover:bg-white/5"
+                      >
+                        <FiLogOut />
+                        <span>Logout</span>
+                      </button>
+                    </li>
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       );
     }
