@@ -2,6 +2,7 @@
 
 import Navbar from '../../components/Navbar';
 import Image from 'next/image';
+import { useEffect, useRef } from 'react';
 
 export default function Home() {
     const contributors = [
@@ -22,6 +23,48 @@ export default function Home() {
         },
     ];
 
+    // Fade-in animation hook with stagger support
+    function useFadeInOnScroll(length: number) {
+        const ref = useRef<(HTMLDivElement | null)[]>([]);
+
+        useEffect(() => {
+            const elements = ref.current;
+            if (!elements) return;
+
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            // Add staggered delay based on data-index attribute
+                            const el = entry.target as HTMLDivElement;
+                            const index = Number(el.dataset.index ?? 0);
+                            el.style.transitionDelay = `${index * 120}ms`;
+                            el.classList.add('opacity-100', 'translate-y-0');
+                            el.classList.remove('opacity-0', 'translate-y-8');
+                        }
+                    });
+                },
+                { threshold: 0.2 }
+            );
+
+            elements.forEach((el) => {
+                if (el) {
+                    observer.observe(el);
+                }
+            });
+
+            return () => {
+                elements.forEach((el) => {
+                    if (el) observer.unobserve(el);
+                });
+            };
+        }, [length]);
+
+        return ref;
+    }
+
+    const fadeInRefs = useFadeInOnScroll(contributors.length);
+
     return (
         <>
             <Navbar />
@@ -34,7 +77,9 @@ export default function Home() {
                     {contributors.map((contributor, index) => (
                         <div
                             key={index}
-                            className="bg-white/5 rounded-2xl p-8 w-64 flex flex-col items-center shadow-md transition hover:shadow-xl"
+                            ref={el => { fadeInRefs.current[index] = el; }}
+                            data-index={index}
+                            className="bg-white/5 rounded-2xl p-8 w-64 flex flex-col items-center shadow-md transition hover:shadow-xl opacity-0 translate-y-8 duration-700 ease-out"
                         >
                             <div className="rounded-full overflow-hidden w-24 h-24 mb-4">
                                 <Image
