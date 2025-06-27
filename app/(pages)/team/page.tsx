@@ -13,12 +13,12 @@ export default function Home() {
         {
             name: 'Guti Balázs',
             image: 'https://cdn.discordapp.com/avatars/691581143669276692/5fd0c3677f16c82aab67d08870743181.webp',
-            description: 'UI/UX Designer and Frontend Developer'
+            description: 'Backend Developer and Database Administrator'
         },
         {
             name: 'Domokos Ádám',
             image: 'https://cdn.discordapp.com/avatars/1006581830880874618/b5dc767a0c6f906903958cbc795303f9.webp',
-            description: 'Backend Developer and Database Administrator'
+            description: 'UI/UX Designer and Frontend Developer'
         },
     ];
 
@@ -34,7 +34,7 @@ export default function Home() {
                     {contributors.map((contributor, index) => (
                         <div
                             key={index}
-                            className="bg-gray-800 rounded-2xl p-8 w-64 flex flex-col items-center shadow-md transition hover:shadow-xl"
+                            className="bg-white/5 rounded-2xl p-8 w-64 flex flex-col items-center shadow-md transition hover:shadow-xl"
                         >
                             <div className="rounded-full overflow-hidden w-24 h-24 mb-4">
                                 <Image
