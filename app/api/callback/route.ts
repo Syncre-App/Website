@@ -121,6 +121,7 @@ export async function GET(request: NextRequest) {
                 profile_picture: profilePictureUrl,
                 username: userData.username,
                 friends: JSON.stringify([]),
+                pending_friends: JSON.stringify([]),
                 accessToken: accessToken,
             };
             await new Promise<void>((resolve, reject) => {
