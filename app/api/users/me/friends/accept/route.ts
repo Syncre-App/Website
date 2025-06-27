@@ -121,6 +121,8 @@ export async function POST(request: Request) {
                                 });
                             }
 
+                            // TO-DO: Create the chat in db
+
                             const updateFromUserQuery = 'UPDATE users SET pending_friends = ?, friends = ? WHERE id = ?';
                             connection.query(updateFromUserQuery, [newFromUserPendingJson, newFromUserFriendsJson, from_id], (error) => {
                                 if (error) {
