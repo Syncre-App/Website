@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createConnection, RowDataPacket } from 'mysql2';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
     const token = request.headers.get('Authorization')?.split(' ')[1];
@@ -121,7 +122,17 @@ export async function POST(request: Request) {
                                 });
                             }
 
-                            // TO-DO: Create the chat in db
+                            const chatId = uuidv4();
+                            const createChatQuery = 'INSERT INTO chats (id, user1_id, user2_id) VALUES (?, ?, ?)';
+                            const [user1, user2] = [to_id, from_id].sort((a, b) => a - b);
+                            connection.query(createChatQuery, [chatId, user1, user2], (error) => {
+                                if (error) {
+                                    return connection.rollback(() => {
+                                        connection.end();
+                                        resolve(NextResponse.json({ error: 'Failed to create chat' }, { status: 500 }));
+                                    });
+                                }
+                            });
 
                             const updateFromUserQuery = 'UPDATE users SET pending_friends = ?, friends = ? WHERE id = ?';
                             connection.query(updateFromUserQuery, [newFromUserPendingJson, newFromUserFriendsJson, from_id], (error) => {
