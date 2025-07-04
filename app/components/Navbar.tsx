@@ -91,7 +91,7 @@ const Navbar = () => {
               />
             )}
             <span className="relative z-10"><FiMessageSquare size={18} /></span>
-            <span className="relative z-10">Chats</span>
+            <span className={`relative z-10 ${activePath === '/contacts' ? 'inline' : 'hidden'} md:inline`}>Chats</span>
           </Link>
           <div
             className="relative"
@@ -201,7 +201,7 @@ const Navbar = () => {
                 />
               )}
               <span className="relative z-10">{link.icon}</span>
-              <span className="relative z-10">{link.label}</span>
+              <span className={`relative z-10 ${activePath === link.href ? 'inline' : 'hidden'} md:inline`}>{link.label}</span>
             </Link>
           ))}
         </div>
