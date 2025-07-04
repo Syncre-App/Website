@@ -34,7 +34,15 @@ export async function GET(request: Request) {
         }
 
         const user = rows[0];
-        return NextResponse.json({ user }, { status: 200 });
+        
+        const notifications = user.notify ? JSON.parse(user.notify) : [];
+        
+        const userResponse = {
+            ...user,
+            notifications
+        };
+        
+        return NextResponse.json({ user: userResponse }, { status: 200 });
 
     } catch (error) {
         console.error('Error fetching current user data:', error);

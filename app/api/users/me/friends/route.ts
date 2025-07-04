@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createConnection, RowDataPacket } from 'mysql2';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
 interface FriendRequest {
     from: number;
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
                     return resolve(NextResponse.json({ error: 'Failed to start transaction' }, { status: 500 }));
                 }
 
-                const findFromUserQuery = 'SELECT id, pending_friends FROM users WHERE hash = ? AND salt = ?';
+                const findFromUserQuery = 'SELECT id, username, pending_friends FROM users WHERE hash = ? AND salt = ?';
                 connection.query(findFromUserQuery, [hash, salt], (error, fromUserResults) => {
                     if (error) {
                         return connection.rollback(() => {
@@ -143,6 +144,7 @@ export async function POST(request: Request) {
                     }
                     const fromUser = fromUsers[0];
                     const from_id = fromUser.id;
+                    const fromUsername = fromUser.username;
 
                     if (from_id === to_id) {
                         return connection.rollback(() => {
@@ -151,7 +153,7 @@ export async function POST(request: Request) {
                         });
                     }
 
-                    const findToUserQuery = 'SELECT id, pending_friends FROM users WHERE id = ?';
+                    const findToUserQuery = 'SELECT id, pending_friends, notify FROM users WHERE id = ?';
                     connection.query(findToUserQuery, [to_id], (error, toUserResults) => {
                         if (error) {
                             return connection.rollback(() => {
@@ -186,6 +188,19 @@ export async function POST(request: Request) {
                         const toPending = toUser.pending_friends ? JSON.parse(toUser.pending_friends) : [];
                         toPending.push(newRequest);
                         const newToPendingJson = JSON.stringify(toPending);
+                        
+                        // Add notification for the receiver
+                        const toNotify = toUser.notify ? JSON.parse(toUser.notify) : [];
+                        const notificationId = uuidv4();
+                        toNotify.push({
+                            id: notificationId,
+                            title: `Friend request from ${fromUsername}`,
+                            userid: from_id,
+                            type: 'friend_request',
+                            read: false,
+                            timestamp: new Date().toISOString()
+                        });
+                        const newToNotifyJson = JSON.stringify(toNotify);
 
                         const updateFromUserQuery = 'UPDATE users SET pending_friends = ? WHERE id = ?';
                         connection.query(updateFromUserQuery, [newFromPendingJson, from_id], (error) => {
@@ -196,8 +211,8 @@ export async function POST(request: Request) {
                                 });
                             }
 
-                            const updateToUserQuery = 'UPDATE users SET pending_friends = ? WHERE id = ?';
-                            connection.query(updateToUserQuery, [newToPendingJson, to_id], (error) => {
+                            const updateToUserQuery = 'UPDATE users SET pending_friends = ?, notify = ? WHERE id = ?';
+                            connection.query(updateToUserQuery, [newToPendingJson, newToNotifyJson, to_id], (error) => {
                                 if (error) {
                                     return connection.rollback(() => {
                                         connection.end();

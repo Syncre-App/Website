@@ -76,22 +76,45 @@ const Navbar = () => {
     setIsDropdownOpen(false);
   };
   
-  const handleNotificationAction = async (notificationId: string, action: string) => {
+  const handleNotificationAction = async (notificationId: string, action: string, notificationType?: string) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      const response = await fetch(`/api/notifications/${notificationId}/${action}`, {
+      // For friend requests, use the dedicated endpoint
+      let endpoint = `/api/notifications/${notificationId}/${action}`;
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
       if (response.ok) {
         if (user) {
-          setUser({
-            ...user,
-            notifications: user.notifications.filter(n => n.id !== notificationId)
-          });
+          if (action === 'accept' && notificationType === 'friend_request') {
+            // If we're accepting a friend request, we might want to refetch user data
+            // to get updated friends list, or handle it client-side
+            const updatedNotifications = user.notifications.filter(n => n.id !== notificationId);
+            setUser({
+              ...user,
+              notifications: updatedNotifications
+            });
+            
+            // Optionally refresh the user data to get updated friends list
+            const res = await fetch('/api/users/me', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              setUser(data.user);
+            }
+          } else {
+            // For other actions, just remove the notification from the list
+            setUser({
+              ...user,
+              notifications: user.notifications.filter(n => n.id !== notificationId)
+            });
+          }
         }
       }
     } catch (error) {
@@ -161,13 +184,13 @@ const Navbar = () => {
                               {notification.type === 'friend_request' ? (
                                 <>
                                   <button 
-                                    onClick={() => handleNotificationAction(notification.id, 'accept')} 
+                                    onClick={() => handleNotificationAction(notification.id, 'accept', notification.type)} 
                                     className="p-1.5 bg-green-600/20 hover:bg-green-600/40 text-green-500 rounded-full transition-colors"
                                   >
                                     <FiCheck size={14} />
                                   </button>
                                   <button 
-                                    onClick={() => handleNotificationAction(notification.id, 'reject')}
+                                    onClick={() => handleNotificationAction(notification.id, 'reject', notification.type)}
                                     className="p-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-500 rounded-full transition-colors"
                                   >
                                     <FiX size={14} />
