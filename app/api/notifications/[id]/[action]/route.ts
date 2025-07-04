@@ -9,7 +9,7 @@ export async function POST(
 ) {
     const { id, action } = params;
     const token = request.headers.get('Authorization')?.split(' ')[1];
-    
+
     if (!token) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -19,7 +19,7 @@ export async function POST(
     }
 
     let connection: Connection | undefined;
-    
+
     try {
         const decodedPayload = jwt.verify(token, process.env.JWT_SECRET!) as { token: string };
         const [hash, salt] = decodedPayload.token.split(':');
@@ -46,56 +46,56 @@ export async function POST(
 
         const user = userRows[0];
         const notifications = user.notify ? JSON.parse(user.notify) : [];
-        
+
         const notificationIndex = notifications.findIndex((n: any) => n.id === id);
-        
+
         if (notificationIndex === -1) {
             return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
         }
-        
+
         const notification = notifications[notificationIndex];
         notifications.splice(notificationIndex, 1);
-        
+
         if (notification.type === 'friend_request' && (action === 'accept' || action === 'reject')) {
             const fromUserId = notification.userid;
-            
+
             const pendingFriends = user.pending_friends ? JSON.parse(user.pending_friends) : [];
             const requestIndex = pendingFriends.findIndex(
                 (req: any) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
             );
-            
+
             if (requestIndex !== -1) {
                 pendingFriends.splice(requestIndex, 1);
-                
+
                 if (action === 'accept') {
                     const friends = user.friends ? JSON.parse(user.friends) : [];
                     if (!friends.includes(parseInt(fromUserId))) {
                         friends.push(parseInt(fromUserId));
                     }
-                    
+
                     const [senderRows] = await connection.execute<RowDataPacket[]>(
                         'SELECT id, username, friends, pending_friends, notify FROM users WHERE id = ?',
                         [fromUserId]
                     );
-                    
+
                     if (senderRows.length > 0) {
                         const sender = senderRows[0];
                         const senderFriends = sender.friends ? JSON.parse(sender.friends) : [];
                         const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];
                         const senderNotify = sender.notify ? JSON.parse(sender.notify) : [];
-                        
+
                         if (!senderFriends.includes(parseInt(user.id))) {
                             senderFriends.push(parseInt(user.id));
                         }
-                        
+
                         const senderRequestIndex = senderPending.findIndex(
                             (req: any) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
                         );
-                        
+
                         if (senderRequestIndex !== -1) {
                             senderPending.splice(senderRequestIndex, 1);
                         }
-                        
+
                         senderNotify.push({
                             id: uuidv4(),
                             title: `${user.username} accepted your friend request`,
@@ -104,7 +104,7 @@ export async function POST(
                             read: false,
                             timestamp: new Date().toISOString()
                         });
-                        
+
                         await connection.execute(
                             'UPDATE users SET friends = ?, pending_friends = ?, notify = ? WHERE id = ?',
                             [
@@ -114,16 +114,16 @@ export async function POST(
                                 fromUserId
                             ]
                         );
-                        
+
                         try {
                             const chatId = uuidv4();
                             const [user1, user2] = [parseInt(user.id), parseInt(fromUserId)].sort((a, b) => a - b);
-                            
+
                             const [existingChatRows] = await connection.execute<RowDataPacket[]>(
                                 'SELECT id FROM chats WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
                                 [user1, user2, user2, user1]
                             );
-                            
+
                             if (existingChatRows.length === 0) {
                                 await connection.execute(
                                     'INSERT INTO chats (id, user1_id, user2_id, created_at) VALUES (?, ?, ?, NOW())',
@@ -134,7 +134,7 @@ export async function POST(
                             console.error('Error creating chat:', error);
                         }
                     }
-                    
+
                     await connection.execute(
                         'UPDATE users SET friends = ?, pending_friends = ?, notify = ? WHERE id = ?',
                         [
@@ -144,60 +144,51 @@ export async function POST(
                             user.id
                         ]
                     );
-                    
+
                     return NextResponse.json({ message: 'Friend request accepted' }, { status: 200 });
                 } else if (action === 'reject') {
                     await connection.execute(
                         'UPDATE users SET pending_friends = ?, notify = ? WHERE id = ?',
                         [JSON.stringify(pendingFriends), JSON.stringify(notifications), user.id]
                     );
-                    
+
                     const [senderRows] = await connection.execute<RowDataPacket[]>(
                         'SELECT id, pending_friends FROM users WHERE id = ?',
                         [fromUserId]
                     );
-                    
+
                     if (senderRows.length > 0) {
                         const sender = senderRows[0];
                         const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];
-                        
+
                         const senderRequestIndex = senderPending.findIndex(
                             (req: any) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
                         );
-                        
+
                         if (senderRequestIndex !== -1) {
                             senderPending.splice(senderRequestIndex, 1);
                         }
-                        
+
                         await connection.execute(
                             'UPDATE users SET pending_friends = ? WHERE id = ?',
                             [JSON.stringify(senderPending), fromUserId]
                         );
                     }
-                    
+
                     return NextResponse.json({ message: 'Friend request rejected' }, { status: 200 });
                 }
             }
         }
-        
+
         await connection.execute(
             'UPDATE users SET notify = ? WHERE id = ?',
             [JSON.stringify(notifications), user.id]
         );
-        
+
         return NextResponse.json({ message: 'Notification processed successfully' }, { status: 200 });
     } catch (error) {
         console.error('Error handling notification action:', error);
         if (error instanceof jwt.JsonWebTokenError) {
-            return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-        }
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
-    }
-}
             return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
         }
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

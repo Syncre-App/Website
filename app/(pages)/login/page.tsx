@@ -41,7 +41,7 @@ const LoginPage = () => {
                 <div className="space-y-4">
                     <button
                         onClick={() => handleLogin('discord')}
-                        className="w-full flex items-center justify-center gap-x-3 py-3 px-4 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752C4] transition-colors duration-300"
+                        className="w-full flex items-center justify-center gap-x-3 py-3 px-4 rounded-lg bg-[#5865F2] text-white font-semibold hover:bg-[#4752C4] transition-colors duration-300 cursor-pointer"
                     >
                         <FaDiscord size={22} />
                         <span>Login with Discord</span>
