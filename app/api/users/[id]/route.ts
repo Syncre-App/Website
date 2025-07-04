@@ -2,8 +2,10 @@ import { NextResponse, NextRequest } from 'next/server';
 import { createConnection, RowDataPacket, Connection } from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-    const targetUserId = params.id;
+export const GET = async (request: NextRequest) => {
+    const { searchParams } = request.nextUrl;
+    const targetUserId = searchParams.get('id');
+    
     if (!targetUserId) {
         return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
