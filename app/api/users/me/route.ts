@@ -25,7 +25,7 @@ export async function GET(request: Request) {
         });
 
         const [rows] = await connection.execute<RowDataPacket[]>(
-            'SELECT id, username, email, profile_picture FROM users WHERE hash = ? AND salt = ?',
+            'SELECT id, username, email, profile_picture, friends, notify, created_at FROM users WHERE hash = ? AND salt = ?',
             [hash, salt]
         );
 

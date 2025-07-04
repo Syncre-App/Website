@@ -130,6 +130,8 @@ export async function GET(request: NextRequest) {
                 username: userData.username,
                 friends: JSON.stringify([]),
                 pending_friends: JSON.stringify([]),
+                notify: JSON.stringify([]),
+                created_at: new Date(),
                 accessToken: accessToken,
             };
             await new Promise<void>((resolve, reject) => {
@@ -137,6 +139,7 @@ export async function GET(request: NextRequest) {
                     if (error) {
                         reject(error);
                     } else {
+                        resolve();
                     }
                 });
             });
