@@ -57,7 +57,7 @@ const ProfilePage = () => {
     <>
       <Navbar />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white pt-32 pb-12 px-4">
-        <div className="max-w-4xl mx-auto p-8 bg-white/5 rounded-2xl shadow-lg backdrop-blur-lg border border-white/10">
+        <div className="max-w-4xl mx-auto p-8 bg-white/5 rounded-2xl shadow-lg backdrop-blur-lg border border-white/10 mt-52">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
             <div className="relative group">
               <Image
