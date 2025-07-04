@@ -34,7 +34,6 @@ export async function GET(request: Request) {
         }
 
         const user = rows[0];
-        
         const notifications = user.notify ? JSON.parse(user.notify) : [];
         
         const userResponse = {

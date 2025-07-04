@@ -189,7 +189,6 @@ export async function POST(request: Request) {
                         toPending.push(newRequest);
                         const newToPendingJson = JSON.stringify(toPending);
                         
-                        // Add notification for the receiver
                         const toNotify = toUser.notify ? JSON.parse(toUser.notify) : [];
                         const notificationId = uuidv4();
                         toNotify.push({

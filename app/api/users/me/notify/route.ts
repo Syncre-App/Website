@@ -58,7 +58,6 @@ export async function POST(request: Request) {
 
     let connection: Connection | undefined;
     try {
-        // Parse the request body
         const { action, notificationId } = await request.json();
         
         if (!action || !notificationId) {
@@ -132,4 +131,5 @@ export async function POST(request: Request) {
             await connection.end();
         }
     }
+}
 }
