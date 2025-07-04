@@ -3,6 +3,11 @@ import { createConnection, RowDataPacket } from 'mysql2';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
+interface FriendRequest {
+    from: number;
+    to: number;
+}
+
 export async function POST(request: Request) {
     const token = request.headers.get('Authorization')?.split(' ')[1];
 
@@ -82,7 +87,7 @@ export async function POST(request: Request) {
                         const fromUser = fromUsers[0];
 
                         const currentUserPending = currentUser.pending_friends ? JSON.parse(currentUser.pending_friends) : [];
-                        const requestIndex = currentUserPending.findIndex((req: any) => req.from === from_id && req.to === to_id);
+                        const requestIndex = currentUserPending.findIndex((req: FriendRequest) => req.from === from_id && req.to === to_id);
 
                         if (requestIndex === -1) {
                             return connection.rollback(() => {
@@ -95,7 +100,7 @@ export async function POST(request: Request) {
                         const newCurrentUserPendingJson = JSON.stringify(currentUserPending);
 
                         const fromUserPending = fromUser.pending_friends ? JSON.parse(fromUser.pending_friends) : [];
-                        const fromUserRequestIndex = fromUserPending.findIndex((req: any) => req.from === from_id && req.to === to_id);
+                        const fromUserRequestIndex = fromUserPending.findIndex((req: FriendRequest) => req.from === from_id && req.to === to_id);
                         if (fromUserRequestIndex !== -1) {
                             fromUserPending.splice(fromUserRequestIndex, 1);
                         }

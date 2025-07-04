@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createConnection } from 'mysql2';
+import { createConnection, RowDataPacket } from 'mysql2';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+
+interface DbUser extends RowDataPacket {
+    id: string;
+    accessToken: string;
+    hash: string;
+    salt: string;
+    email: string;
+}
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -65,22 +73,22 @@ export async function GET(request: NextRequest) {
             : `https://cdn.discordapp.com/embed/avatars/${parseInt(userData.discriminator) % 5}.png`;
 
         const userId = userData.id;
-        const existingUser = await new Promise<any[]>((resolve, reject) => {
+        const existingUser = await new Promise<DbUser[]>((resolve, reject) => {
             connection.query('SELECT * FROM users WHERE id = ?', [userId], (error, results) => {
                 if (error) {
                     reject(error);
                 } else {
-                    resolve(results as any[]);
+                    resolve(results as DbUser[]);
                 }
             });
         });
 
-        const existingUser2 = await new Promise<any[]>((resolve, reject) => {
+        const existingUser2 = await new Promise<DbUser[]>((resolve, reject) => {
             connection.query('SELECT * FROM users WHERE email = ?', [userData.email], (error, results) => {
                 if (error) {
                     reject(error);
                 } else {
-                    resolve(results as any[]);
+                    resolve(results as DbUser[]);
                 }
             });
         });

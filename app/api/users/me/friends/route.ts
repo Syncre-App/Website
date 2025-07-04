@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { createConnection, RowDataPacket } from 'mysql2';
 import jwt from 'jsonwebtoken';
 
+interface FriendRequest {
+    from: number;
+    to: number;
+}
+
 export async function GET(request: Request) {
     const token = request.headers.get('Authorization')?.split(' ')[1];
 
@@ -165,7 +170,7 @@ export async function POST(request: Request) {
                         const toUser = toUsers[0];
 
                         const fromPending = fromUser.pending_friends ? JSON.parse(fromUser.pending_friends) : [];
-                        const requestExists = fromPending.some((req: any) => (req.from === from_id && req.to === to_id) || (req.from === to_id && req.to === from_id));
+                        const requestExists = fromPending.some((req: FriendRequest) => (req.from === from_id && req.to === to_id) || (req.from === to_id && req.to === from_id));
                         if (requestExists) {
                             return connection.rollback(() => {
                                 connection.end();
