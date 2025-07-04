@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createConnection, RowDataPacket } from 'mysql2/promise';
+import { createConnection, RowDataPacket, Connection } from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: Request) {
@@ -8,7 +8,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let connection;
+    let connection: Connection | undefined;
     try {
         const decodedPayload = jwt.verify(token, process.env.JWT_SECRET!) as { token: string };
         const [hash, salt] = decodedPayload.token.split(':');

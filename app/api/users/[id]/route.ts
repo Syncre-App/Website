@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { createConnection, RowDataPacket } from 'mysql2/promise';
+import { NextResponse, NextRequest } from 'next/server';
+import { createConnection, RowDataPacket, Connection } from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     const targetUserId = params.id;
     if (!targetUserId) {
         return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let connection;
+    let connection: Connection | undefined;
     try {
         const decodedPayload = jwt.verify(token, process.env.JWT_SECRET!) as { token: string };
         const [hash, salt] = decodedPayload.token.split(':');
@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         const currentUserFriends = currentUserRows[0].friends ? JSON.parse(currentUserRows[0].friends) : [];
 
         const [targetUserRows] = await connection.execute<RowDataPacket[]>(
-            'SELECT username, pfp, friends FROM users WHERE id = ?',
+            'SELECT username, profile_picture, friends FROM users WHERE id = ?',
             [targetUserId]
         );
 
@@ -56,7 +56,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         if (commonFriendIds.length > 0) {
             const placeholders = commonFriendIds.map(() => '?').join(',');
             const [commonFriendRows] = await connection.execute<RowDataPacket[]>(
-                `SELECT id, username, pfp FROM users WHERE id IN (${placeholders})`,
+                `SELECT id, username, profile_picture FROM users WHERE id IN (${placeholders})`,
                 commonFriendIds
             );
             commonFriendsDetails = commonFriendRows;
@@ -64,7 +64,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
         const responseData = {
             username: targetUser.username,
-            pfp: targetUser.pfp,
+            profile_picture: targetUser.profile_picture,
             common_friends: commonFriendsDetails,
         };
 
