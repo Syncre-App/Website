@@ -9,7 +9,7 @@ const LoginPage = () => {
         if (provider === 'discord') {
             window.location.href = `https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&response_type=code&redirect_uri=${process.env.NEXT_PUBLIC_REDIRECT_URI}&scope=${process.env.NEXT_PUBLIC_SCOPE}`;
         } else {
-            console.log(`Login with ${provider} is not implemented yet.`);
+            // Other providers not implemented yet
         }
     };
 

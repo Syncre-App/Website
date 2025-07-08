@@ -81,18 +81,14 @@ export async function POST(
                     (req.from.toString() === user.id.toString() && req.to.toString() === fromUserId.toString())
             );
             
-            console.log('Request index found:', requestIndex);
-
             if (requestIndex !== -1) {
                 pendingFriends.splice(requestIndex, 1);
-                console.log('Removed request from pending friends. New list:', pendingFriends);
 
                 if (action === 'accept') {
                     const friends = user.friends ? JSON.parse(user.friends) : [];
                     if (!friends.includes(parseInt(fromUserId))) {
                         friends.push(parseInt(fromUserId));
                     }
-                    console.log('Updated friends list for current user:', friends);
 
                     const [senderRows] = await connection.execute<RowDataPacket[]>(
                         'SELECT id, username, friends, pending_friends, notify FROM users WHERE id = ?',
@@ -108,7 +104,6 @@ export async function POST(
                         if (!senderFriends.includes(parseInt(user.id))) {
                             senderFriends.push(parseInt(user.id));
                         }
-                        console.log('Updated friends list for sender:', senderFriends);
                         
                         const senderRequestIndex = senderPending.findIndex(
                             (req: FriendRequest) => 
@@ -119,7 +114,6 @@ export async function POST(
                         if (senderRequestIndex !== -1) {
                             senderPending.splice(senderRequestIndex, 1);
                         }
-                        console.log('Updated pending list for sender:', senderPending);
 
                         senderNotify.push({
                             id: uuidv4(),
@@ -139,7 +133,6 @@ export async function POST(
                                 fromUserId
                             ]
                         );
-                        console.log('Updated sender in database');
 
                         const chatId = uuidv4();
                         const [user1, user2] = [parseInt(user.id), parseInt(fromUserId)].sort((a, b) => a - b);
@@ -154,9 +147,6 @@ export async function POST(
                                 'INSERT INTO chats (id, user1_id, user2_id, created_at) VALUES (?, ?, ?, NOW())',
                                 [chatId, user1, user2]
                             );
-                            console.log('Created new chat:', chatId);
-                        } else {
-                            console.log('Chat already exists');
                         }
                     }
 
@@ -169,7 +159,6 @@ export async function POST(
                             user.id
                         ]
                     );
-                    console.log('Updated current user in database');
 
                     return NextResponse.json({ message: 'Friend request accepted successfully' }, { status: 200 });
                 } else if (action === 'reject') {
@@ -196,19 +185,16 @@ export async function POST(
                             'UPDATE users SET pending_friends = ? WHERE id = ?',
                             [JSON.stringify(senderPending), fromUserId]
                         );
-                        console.log('Updated sender pending list for reject');
                     }
 
                     await connection.execute(
                         'UPDATE users SET pending_friends = ?, notify = ? WHERE id = ?',
                         [JSON.stringify(pendingFriends), JSON.stringify(notifications), user.id]
                     );
-                    console.log('Updated current user for reject');
 
                     return NextResponse.json({ message: 'Friend request rejected successfully' }, { status: 200 });
                 }
             } else {
-                console.log('Request not found in pending friends list');
                 await connection.execute(
                     'UPDATE users SET notify = ? WHERE id = ?',
                     [JSON.stringify(notifications), user.id]
