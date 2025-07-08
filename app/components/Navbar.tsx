@@ -76,7 +76,7 @@ const Navbar = () => {
     setIsDropdownOpen(false);
   };
   
-  const handleNotificationAction = async (notificationId: string, action: string, notificationType?: string) => {
+  const handleNotificationAction = async (notificationId: string, action: string) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -90,27 +90,17 @@ const Navbar = () => {
       
       if (response.ok) {
         if (user) {
-          if (action === 'accept' && notificationType === 'friend_request') {
-            const updatedNotifications = user.notifications.filter(n => n.id !== notificationId);
-            setUser({
-              ...user,
-              notifications: updatedNotifications
-            });
-            
-            const res = await fetch('/api/users/me', {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-              const data = await res.json();
-              setUser(data.user);
-            }
-          } else {
-            setUser({
-              ...user,
-              notifications: user.notifications.filter(n => n.id !== notificationId)
-            });
+          // Refresh user data to get updated notifications and friends list
+          const res = await fetch('/api/users/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setUser(data.user);
           }
         }
+      } else {
+        console.error('Failed to process notification action');
       }
     } catch (error) {
       console.error('Failed to handle notification action', error);
@@ -179,13 +169,13 @@ const Navbar = () => {
                               {notification.type === 'friend_request' ? (
                                 <>
                                   <button 
-                                    onClick={() => handleNotificationAction(notification.id, 'accept', notification.type)} 
+                                    onClick={() => handleNotificationAction(notification.id, 'accept')} 
                                     className="p-1.5 bg-green-600/20 hover:bg-green-600/40 text-green-500 rounded-full transition-colors"
                                   >
                                     <FiCheck size={14} />
                                   </button>
                                   <button 
-                                    onClick={() => handleNotificationAction(notification.id, 'reject', notification.type)}
+                                    onClick={() => handleNotificationAction(notification.id, 'reject')}
                                     className="p-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-500 rounded-full transition-colors"
                                   >
                                     <FiX size={14} />

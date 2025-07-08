@@ -94,7 +94,9 @@ export async function POST(
                         const sender = senderRows[0];
                         const senderFriends = sender.friends ? JSON.parse(sender.friends) : [];
                         const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];
-                        const senderNotify = sender.notify ? JSON.parse(sender.notify) : [];                        if (!senderFriends.includes(parseInt(user.id))) {
+                        const senderNotify = sender.notify ? JSON.parse(sender.notify) : [];
+                        
+                        if (!senderFriends.includes(parseInt(user.id))) {
                             senderFriends.push(parseInt(user.id));
                         }
                         
@@ -169,7 +171,9 @@ export async function POST(
 
                     if (senderRows.length > 0) {
                         const sender = senderRows[0];
-                        const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];                        const senderRequestIndex = senderPending.findIndex(
+                        const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];
+                        
+                        const senderRequestIndex = senderPending.findIndex(
                             (req: FriendRequest) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
                         );
                         
