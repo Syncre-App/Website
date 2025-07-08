@@ -56,7 +56,9 @@ export async function POST(
 
         if (userRows.length === 0) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }        const user = userRows[0];
+        }
+
+        const user = userRows[0];
         const notifications: Notification[] = user.notify ? JSON.parse(user.notify) : [];
         
         const notificationIndex = notifications.findIndex((n: Notification) => n.id === id);
@@ -72,18 +74,25 @@ export async function POST(
             const fromUserId = notification.userid;
             
             const pendingFriends: FriendRequest[] = user.pending_friends ? JSON.parse(user.pending_friends) : [];
+            
             const requestIndex = pendingFriends.findIndex(
-                (req: FriendRequest) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
+                (req: FriendRequest) => 
+                    (req.from.toString() === fromUserId.toString() && req.to.toString() === user.id.toString()) ||
+                    (req.from.toString() === user.id.toString() && req.to.toString() === fromUserId.toString())
             );
+            
+            console.log('Request index found:', requestIndex);
 
             if (requestIndex !== -1) {
                 pendingFriends.splice(requestIndex, 1);
+                console.log('Removed request from pending friends. New list:', pendingFriends);
 
                 if (action === 'accept') {
                     const friends = user.friends ? JSON.parse(user.friends) : [];
                     if (!friends.includes(parseInt(fromUserId))) {
                         friends.push(parseInt(fromUserId));
                     }
+                    console.log('Updated friends list for current user:', friends);
 
                     const [senderRows] = await connection.execute<RowDataPacket[]>(
                         'SELECT id, username, friends, pending_friends, notify FROM users WHERE id = ?',
@@ -99,14 +108,18 @@ export async function POST(
                         if (!senderFriends.includes(parseInt(user.id))) {
                             senderFriends.push(parseInt(user.id));
                         }
+                        console.log('Updated friends list for sender:', senderFriends);
                         
                         const senderRequestIndex = senderPending.findIndex(
-                            (req: FriendRequest) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
+                            (req: FriendRequest) => 
+                                (req.from.toString() === fromUserId.toString() && req.to.toString() === user.id.toString()) ||
+                                (req.from.toString() === user.id.toString() && req.to.toString() === fromUserId.toString())
                         );
                         
                         if (senderRequestIndex !== -1) {
                             senderPending.splice(senderRequestIndex, 1);
                         }
+                        console.log('Updated pending list for sender:', senderPending);
 
                         senderNotify.push({
                             id: uuidv4(),
@@ -126,24 +139,24 @@ export async function POST(
                                 fromUserId
                             ]
                         );
+                        console.log('Updated sender in database');
 
-                        try {
-                            const chatId = uuidv4();
-                            const [user1, user2] = [parseInt(user.id), parseInt(fromUserId)].sort((a, b) => a - b);
+                        const chatId = uuidv4();
+                        const [user1, user2] = [parseInt(user.id), parseInt(fromUserId)].sort((a, b) => a - b);
 
-                            const [existingChatRows] = await connection.execute<RowDataPacket[]>(
-                                'SELECT id FROM chats WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
-                                [user1, user2, user2, user1]
+                        const [existingChatRows] = await connection.execute<RowDataPacket[]>(
+                            'SELECT id FROM chats WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
+                            [user1, user2, user2, user1]
+                        );
+
+                        if (existingChatRows.length === 0) {
+                            await connection.execute(
+                                'INSERT INTO chats (id, user1_id, user2_id, created_at) VALUES (?, ?, ?, NOW())',
+                                [chatId, user1, user2]
                             );
-
-                            if (existingChatRows.length === 0) {
-                                await connection.execute(
-                                    'INSERT INTO chats (id, user1_id, user2_id, created_at) VALUES (?, ?, ?, NOW())',
-                                    [chatId, user1, user2]
-                                );
-                            }
-                        } catch (error) {
-                            console.error('Error creating chat:', error);
+                            console.log('Created new chat:', chatId);
+                        } else {
+                            console.log('Chat already exists');
                         }
                     }
 
@@ -156,14 +169,10 @@ export async function POST(
                             user.id
                         ]
                     );
+                    console.log('Updated current user in database');
 
-                    return NextResponse.json({ message: 'Friend request accepted' }, { status: 200 });
+                    return NextResponse.json({ message: 'Friend request accepted successfully' }, { status: 200 });
                 } else if (action === 'reject') {
-                    await connection.execute(
-                        'UPDATE users SET pending_friends = ?, notify = ? WHERE id = ?',
-                        [JSON.stringify(pendingFriends), JSON.stringify(notifications), user.id]
-                    );
-
                     const [senderRows] = await connection.execute<RowDataPacket[]>(
                         'SELECT id, pending_friends FROM users WHERE id = ?',
                         [fromUserId]
@@ -174,7 +183,9 @@ export async function POST(
                         const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];
                         
                         const senderRequestIndex = senderPending.findIndex(
-                            (req: FriendRequest) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
+                            (req: FriendRequest) => 
+                                (req.from.toString() === fromUserId.toString() && req.to.toString() === user.id.toString()) ||
+                                (req.from.toString() === user.id.toString() && req.to.toString() === fromUserId.toString())
                         );
                         
                         if (senderRequestIndex !== -1) {
@@ -185,10 +196,24 @@ export async function POST(
                             'UPDATE users SET pending_friends = ? WHERE id = ?',
                             [JSON.stringify(senderPending), fromUserId]
                         );
+                        console.log('Updated sender pending list for reject');
                     }
 
-                    return NextResponse.json({ message: 'Friend request rejected' }, { status: 200 });
+                    await connection.execute(
+                        'UPDATE users SET pending_friends = ?, notify = ? WHERE id = ?',
+                        [JSON.stringify(pendingFriends), JSON.stringify(notifications), user.id]
+                    );
+                    console.log('Updated current user for reject');
+
+                    return NextResponse.json({ message: 'Friend request rejected successfully' }, { status: 200 });
                 }
+            } else {
+                console.log('Request not found in pending friends list');
+                await connection.execute(
+                    'UPDATE users SET notify = ? WHERE id = ?',
+                    [JSON.stringify(notifications), user.id]
+                );
+                return NextResponse.json({ message: 'Friend request not found in pending list, notification removed' }, { status: 200 });
             }
         }
 
