@@ -3,11 +3,25 @@ import { createConnection, RowDataPacket, Connection } from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
+interface Notification {
+    id: string;
+    title: string;
+    userid: string;
+    type?: string;
+    read?: boolean;
+    timestamp?: string;
+}
+
+interface FriendRequest {
+    from: number;
+    to: number;
+}
+
 export async function POST(
     request: Request,
-    { params }: { params: { id: string; action: string } }
+    { params }: { params: Promise<{ id: string; action: string }> }
 ) {
-    const { id, action } = params;
+    const { id, action } = await params;
     const token = request.headers.get('Authorization')?.split(' ')[1];
 
     if (!token) {
@@ -42,26 +56,24 @@ export async function POST(
 
         if (userRows.length === 0) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
-
-        const user = userRows[0];
-        const notifications = user.notify ? JSON.parse(user.notify) : [];
-
-        const notificationIndex = notifications.findIndex((n: any) => n.id === id);
-
+        }        const user = userRows[0];
+        const notifications: Notification[] = user.notify ? JSON.parse(user.notify) : [];
+        
+        const notificationIndex = notifications.findIndex((n: Notification) => n.id === id);
+        
         if (notificationIndex === -1) {
             return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
         }
-
+        
         const notification = notifications[notificationIndex];
         notifications.splice(notificationIndex, 1);
-
+        
         if (notification.type === 'friend_request' && (action === 'accept' || action === 'reject')) {
             const fromUserId = notification.userid;
-
-            const pendingFriends = user.pending_friends ? JSON.parse(user.pending_friends) : [];
+            
+            const pendingFriends: FriendRequest[] = user.pending_friends ? JSON.parse(user.pending_friends) : [];
             const requestIndex = pendingFriends.findIndex(
-                (req: any) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
+                (req: FriendRequest) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
             );
 
             if (requestIndex !== -1) {
@@ -82,16 +94,14 @@ export async function POST(
                         const sender = senderRows[0];
                         const senderFriends = sender.friends ? JSON.parse(sender.friends) : [];
                         const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];
-                        const senderNotify = sender.notify ? JSON.parse(sender.notify) : [];
-
-                        if (!senderFriends.includes(parseInt(user.id))) {
+                        const senderNotify = sender.notify ? JSON.parse(sender.notify) : [];                        if (!senderFriends.includes(parseInt(user.id))) {
                             senderFriends.push(parseInt(user.id));
                         }
-
+                        
                         const senderRequestIndex = senderPending.findIndex(
-                            (req: any) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
+                            (req: FriendRequest) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
                         );
-
+                        
                         if (senderRequestIndex !== -1) {
                             senderPending.splice(senderRequestIndex, 1);
                         }
@@ -159,16 +169,14 @@ export async function POST(
 
                     if (senderRows.length > 0) {
                         const sender = senderRows[0];
-                        const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];
-
-                        const senderRequestIndex = senderPending.findIndex(
-                            (req: any) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
+                        const senderPending = sender.pending_friends ? JSON.parse(sender.pending_friends) : [];                        const senderRequestIndex = senderPending.findIndex(
+                            (req: FriendRequest) => req.from === parseInt(fromUserId) && req.to === parseInt(user.id)
                         );
-
+                        
                         if (senderRequestIndex !== -1) {
                             senderPending.splice(senderRequestIndex, 1);
                         }
-
+                        
                         await connection.execute(
                             'UPDATE users SET pending_friends = ? WHERE id = ?',
                             [JSON.stringify(senderPending), fromUserId]

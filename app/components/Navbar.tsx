@@ -81,8 +81,7 @@ const Navbar = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      // For friend requests, use the dedicated endpoint
-      let endpoint = `/api/notifications/${notificationId}/${action}`;
+      const endpoint = `/api/notifications/${notificationId}/${action}`;
       
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -92,15 +91,12 @@ const Navbar = () => {
       if (response.ok) {
         if (user) {
           if (action === 'accept' && notificationType === 'friend_request') {
-            // If we're accepting a friend request, we might want to refetch user data
-            // to get updated friends list, or handle it client-side
             const updatedNotifications = user.notifications.filter(n => n.id !== notificationId);
             setUser({
               ...user,
               notifications: updatedNotifications
             });
             
-            // Optionally refresh the user data to get updated friends list
             const res = await fetch('/api/users/me', {
               headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -109,7 +105,6 @@ const Navbar = () => {
               setUser(data.user);
             }
           } else {
-            // For other actions, just remove the notification from the list
             setUser({
               ...user,
               notifications: user.notifications.filter(n => n.id !== notificationId)

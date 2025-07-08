@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { createConnection, RowDataPacket, Connection } from 'mysql2/promise';
 import jwt from 'jsonwebtoken';
 
+interface Notification {
+    id: string;
+    title: string;
+    userid: string;
+    type?: string;
+    read?: boolean;
+    timestamp?: string;
+}
+
 export async function GET(request: Request) {
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
@@ -92,10 +101,10 @@ export async function POST(request: Request) {
         }
 
         const user = rows[0];
-        const notifications = user.notify ? JSON.parse(user.notify) : [];
+        const notifications: Notification[] = user.notify ? JSON.parse(user.notify) : [];
         
         if (action === 'mark_read') {
-            const index = notifications.findIndex((n: any) => n.id === notificationId);
+            const index = notifications.findIndex((n: Notification) => n.id === notificationId);
             if (index !== -1) {
                 notifications[index].read = true;
             }
@@ -104,7 +113,7 @@ export async function POST(request: Request) {
                 notification.read = true;
             }
         } else if (action === 'delete') {
-            const index = notifications.findIndex((n: any) => n.id === notificationId);
+            const index = notifications.findIndex((n: Notification) => n.id === notificationId);
             if (index !== -1) {
                 notifications.splice(index, 1);
             }
