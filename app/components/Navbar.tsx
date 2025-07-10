@@ -158,7 +158,7 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-4 w-80 bg-white/5 border border-white/10 rounded-lg shadow-lg z-30"
+                  className="absolute top-full right-0 mt-6 w-80 bg-white/5 border border-white/10 rounded-lg shadow-lg z-30"
                 >
                   <div className="p-3 border-b border-white/10">
                     <h3 className="text-white font-medium">Notifications</h3>
@@ -348,10 +348,9 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-[30px] w-full flex justify-center z-50 px-4">
-      <div className="w-full max-w-[1200px] flex items-center">
+      <div className="w-full max-w-[1200px] flex items-center gap-x-8">
         <nav
-          className="h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
-          style={{ width: 'calc(100% - 120px)' }}
+          className="flex-1 max-w-[calc(100%-140px)] h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
           onMouseLeave={() => setActivePath(pathname)}
         >
           <div className="flex items-center gap-x-2">
@@ -377,7 +376,7 @@ const Navbar = () => {
           </div>
           {renderAuthSection()}
         </nav>
-        <div className="w-[120px] flex justify-center">
+        <div className="flex-shrink-0">
           {renderChatButton()}
         </div>
       </div>
