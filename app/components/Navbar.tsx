@@ -90,7 +90,6 @@ const Navbar = () => {
       
       if (response.ok) {
         if (user) {
-          // Refresh user data to get updated notifications and friends list
           const res = await fetch('/api/users/me', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -124,18 +123,29 @@ const Navbar = () => {
     if (user) {
       return (
         <div className="flex items-center gap-x-2">
-          <div className="relative mr-2">
+          <div 
+            className="relative mr-2"
+            onMouseEnter={() => setIsNotificationOpen(true)}
+            onMouseLeave={() => setIsNotificationOpen(false)}
+          >
             <button 
               onClick={() => {
                 setIsNotificationOpen(!isNotificationOpen);
                 setNotificationPage(0);
               }}
               className="relative p-2 text-gray-300 hover:text-white transition-colors duration-300"
-              onMouseEnter={() => setActivePath('')}
+              onMouseEnter={() => setActivePath('notifications')}
             >
-              <FiBell size={20} />
+              {activePath === 'notifications' && (
+                <motion.div
+                  layoutId="active-nav-pill"
+                  className="absolute inset-0 bg-blue-600 rounded-full"
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                />
+              )}
+              <FiBell size={20} className="relative z-10" />
               {unreadNotificationsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full z-20">
                   {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
                 </span>
               )}
@@ -148,7 +158,7 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-2 w-80 bg-white/5 border border-white/10 rounded-lg shadow-lg z-30"
+                  className="absolute top-full right-0 mt-4 w-80 bg-white/5 border border-white/10 rounded-lg shadow-lg z-30"
                 >
                   <div className="p-3 border-b border-white/10">
                     <h3 className="text-white font-medium">Notifications</h3>
@@ -226,39 +236,31 @@ const Navbar = () => {
             </AnimatePresence>
           </div>
           
-          <Link
-            href="/contacts"
-            onMouseEnter={() => setActivePath('/contacts')}
-            className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === '/contacts' ? 'text-white' : 'text-gray-300 hover:text-white'}`}
-          >
-            {activePath === '/contacts' && (
-              <motion.div
-                layoutId="active-nav-pill"
-                className="absolute inset-0 bg-blue-600 rounded-full"
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              />
-            )}
-            <span className="relative z-10"><FiMessageSquare size={18} /></span>
-            <span className={`relative z-10 ${activePath === '/contacts' ? 'inline' : 'hidden'} md:inline`}>Chats</span>
-          </Link>
           <div
             className="relative"
             onMouseEnter={() => {
-              setActivePath('');
+              setActivePath('profile');
               setIsDropdownOpen(true);
             }}
             onMouseLeave={() => setIsDropdownOpen(false)}
           >
-            <div className="flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer">
+            <div className="relative flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer">
+              {activePath === 'profile' && (
+                <motion.div
+                  layoutId="active-nav-pill"
+                  className="absolute inset-0 bg-blue-600 rounded-full"
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                />
+              )}
               <Image
                 src={user.profile_picture}
                 alt={user.username}
                 width={40}
                 height={40}
-                className="rounded-full"
+                className="rounded-full relative z-10"
               />
-              <span className="text-white font-medium text-base hidden sm:block">{user.username}</span>
-              <FiChevronDown size={20} className={`text-gray-300 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <span className="text-white font-medium text-base hidden sm:block relative z-10">{user.username}</span>
+              <FiChevronDown size={20} className={`text-gray-300 transition-transform duration-300 relative z-10 ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </div>
             <AnimatePresence>
               {isDropdownOpen && (
@@ -267,7 +269,7 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-2 w-48 bg-white/5 border border-white/10 rounded-lg shadow-lg z-20"
+                  className="absolute top-full right-0 mt-4 w-48 bg-white/5 border border-white/10 rounded-lg shadow-lg z-20"
                 >
                   <ul className="py-1">
                     <li>
@@ -326,35 +328,59 @@ const Navbar = () => {
     );
   };
 
+  const renderChatButton = () => {
+    if (!user) return null;
+    
+    return (
+      <Link
+        href="/contacts"
+        className="relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 text-white"
+      >
+        <motion.div
+          className="absolute inset-0 bg-blue-600 rounded-full"
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        />
+        <span className="relative z-10"><FiMessageSquare size={18} /></span>
+        <span className="relative z-10">Chats</span>
+      </Link>
+    );
+  };
+
   return (
     <div className="fixed top-[30px] w-full flex justify-center z-50 px-4">
-      <nav
-        className="w-full max-w-[1000px] h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
-        onMouseLeave={() => setActivePath(pathname)}
-      >
-        <div className="flex items-center gap-x-2">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onMouseEnter={() => setActivePath(link.href)}
-              className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
-                }`}
-            >
-              {activePath === link.href && (
-                <motion.div
-                  layoutId="active-nav-pill"
-                  className="absolute inset-0 bg-blue-600 rounded-full"
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                />
-              )}
-              <span className="relative z-10">{link.icon}</span>
-              <span className={`relative z-10 ${activePath === link.href ? 'inline' : 'hidden'} md:inline`}>{link.label}</span>
-            </Link>
-          ))}
+      <div className="w-full max-w-[1200px] flex items-center">
+        <nav
+          className="h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
+          style={{ width: 'calc(100% - 120px)' }}
+          onMouseLeave={() => setActivePath(pathname)}
+        >
+          <div className="flex items-center gap-x-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onMouseEnter={() => setActivePath(link.href)}
+                className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
+                  }`}
+              >
+                {activePath === link.href && (
+                  <motion.div
+                    layoutId="active-nav-pill"
+                    className="absolute inset-0 bg-blue-600 rounded-full"
+                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                  />
+                )}
+                <span className="relative z-10">{link.icon}</span>
+                <span className={`relative z-10 ${activePath === link.href ? 'inline' : 'hidden'} md:inline`}>{link.label}</span>
+              </Link>
+            ))}
+          </div>
+          {renderAuthSection()}
+        </nav>
+        <div className="w-[120px] flex justify-center">
+          {renderChatButton()}
         </div>
-        {renderAuthSection()}
-      </nav>
+      </div>
     </div>
   );
 };
