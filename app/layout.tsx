@@ -2,8 +2,8 @@ import type { Metadata } from "next"; import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
-  title: "Syncre",
-  description: "A modern, open-source, cross-platform chat application.",
+  title: "Syncre - Hosting",
+  description: "A modern hosting platform, with good performance and scalability.",
   authors: [
     {
       name: "Syncre Team",

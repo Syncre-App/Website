@@ -36,8 +36,8 @@ export default function Home() {
           initial="hidden"
           animate="visible"
         >
-          <motion.h1 className="text-5xl md:text-6xl font-bold mb-4" variants={itemVariants}>Syncre</motion.h1>
-          <motion.p className="text-lg md:text-xl mb-8" variants={itemVariants}>A modern, open-source, cross-platform chat application. Soon™</motion.p>
+          <motion.h1 className="text-5xl md:text-6xl font-bold mb-4" variants={itemVariants}>Syncre - Hosting</motion.h1>
+          <motion.p className="text-lg md:text-xl mb-8" variants={itemVariants}>A modern hosting platform, with good performance and scalability.</motion.p>
         </motion.div>
       </main>
     </>
