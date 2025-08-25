@@ -1,4 +1,3 @@
-```markdown
 # API dokumentáció (rövid)
 
 Ez a fájl röviden összefoglalja az `app/api` alatt található végpontokat: útvonal, HTTP metódus, szükséges hitelesítés, bemenetek és viselkedés.
@@ -81,17 +80,3 @@ Checklist:
 - Auth: szükséges
 - Body (JSON): `{ action: 'mark_read'|'mark_all_read'|'delete', notificationId?: string }`
 - Viselkedés: Frissíti a `notify` mezőt a felhasználónál és visszaadja a frissített értesítéseket.
-
----
-
-## Hibák és DB séma megjegyzések
-- Ha a táblád eltér a projektben használt sémától, előfordulhat `ER_BAD_FIELD_ERROR` (ismeretlen oszlop) vagy `ER_NO_DEFAULT_FOR_FIELD` hibák. A repó kódja próbálja kezelni az ismeretlen oszlopokat (`safeInsert`), de nem pótolja a NOT NULL mezőket — ezeket vagy a kódnak kell feltölteni, vagy az adatbázist kell módosítani.
-- Gyakori javítások (példák):
-	- `ALTER TABLE users ADD COLUMN dc_id VARCHAR(20) NULL;`
-	- `ALTER TABLE users ADD COLUMN friends LONGTEXT NULL, ADD COLUMN pending_friends LONGTEXT NOT NULL DEFAULT '[]', ADD COLUMN notify LONGTEXT NULL;`
-
-## Kiegészítő megjegyzés
-- Ha később automatikus guild-join funkciót szeretnél (bot hozzáadása a szerverre), szükséges lesz `DISCORD_BOT_TOKEN` és `DISCORD_GUILD_ID` env változókra, és a botnak megfelelő jogosultságokra a szerveren.
-
-Ha szeretnéd, beleteszem a README-be a pontos request/response példákat minden végponthoz — szólj, melyik végpontnál kéred a példát.
-```
