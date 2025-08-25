@@ -111,10 +111,6 @@ export async function GET(request: NextRequest) {
             const token = jwt.sign({ token: userIdWithSalt }, process.env.JWT_SECRET!, { expiresIn: '2d' });
             return NextResponse.redirect(new URL(`/login?token=${token}`, request.url));
         } else {
-            if (existingUser2.length > 0) {
-                return NextResponse.json({ error: 'Email already exists' }, { status: 400 });
-            }
-
             const salt = crypto.randomBytes(16).toString('hex');
             const hash = crypto.createHash('sha256').update(userId + salt).digest('hex');
             const userIdWithSalt = `${hash}:${salt}`;
