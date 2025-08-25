@@ -8,9 +8,7 @@ const LoginPage = () => {
     const handleLogin = (provider: 'google' | 'discord' | 'github') => {
         if (provider === 'discord') {
             window.location.href = `https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&response_type=code&redirect_uri=${process.env.NEXT_PUBLIC_REDIRECT_URI}&scope=${process.env.NEXT_PUBLIC_SCOPE}`;
-        } else {
-            // Other providers not implemented yet
-        }
+        } else {}
     };
 
     useEffect(() => {
