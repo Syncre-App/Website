@@ -32,12 +32,11 @@ export default function Home() {
     <>
       <Navbar />
       <main className={`flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white ${inter.className}`}>
-        <motion.div 
+        <motion.div
           className="flex flex-col items-center justify-center text-center m-auto"
           variants={containerVariants}
           initial="hidden"
-          animate="visible"
-        >
+          animate="visible">
           <motion.h1 className="text-5xl md:text-6xl font-bold mb-4" variants={itemVariants}>Syncre</motion.h1>
           <motion.p className="text-lg md:text-xl mb-8" variants={itemVariants}>A modern, open-source, cross-platform chat application.</motion.p>
         </motion.div>
