@@ -1,15 +1,24 @@
-import type { Metadata } from "next"; import "./globals.css";
+import type { Metadata } from "next"; 
+import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
-  title: "Syncre - Hosting",
-  description: "A modern hosting platform, with good performance and scalability.",
+  title: "Syncre",
+  description: "A modern, open-source, cross-platform chat application.",
   authors: [
     {
       name: "Syncre Team",
       url: "https://git.devbeni.lol/Syncre",
     },
   ],
+  keywords: [
+    "Syncre",
+    "Chat",
+    "Open Source",
+    "Cross Platform",
+    "Self-Hosted",
+    "Modern Chat Application",
+  ]
 };
 
 export default function RootLayout({
