@@ -1,4 +1,4 @@
-# API dokumentáció (rövid)
+# API dokumentáció
 
 Ez a fájl röviden összefoglalja az `app/api` alatt található végpontokat: útvonal, HTTP metódus, szükséges hitelesítés, bemenetek és viselkedés.
 
