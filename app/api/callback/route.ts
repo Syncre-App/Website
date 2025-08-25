@@ -130,15 +130,39 @@ export async function GET(request: NextRequest) {
                 created_at: new Date(),
                 accessToken: accessToken,
             };
-            await new Promise<void>((resolve, reject) => {
-                connection.query('INSERT INTO users SET ?', newUser, (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve();
+            async function safeInsert(table: string, data: Record<string, any>) {
+                let payload = { ...data } as Record<string, any>;
+                const removed = new Set<string>();
+                while (true) {
+                    try {
+                        await new Promise<void>((resolve, reject) => {
+                            connection.query(`INSERT INTO ${table} SET ?`, payload, (error) => {
+                                if (error) reject(error);
+                                else resolve();
+                            });
+                        });
+                        return;
+                    } catch (err: any) {
+                        if (err && err.code === 'ER_BAD_FIELD_ERROR' && typeof err.sqlMessage === 'string') {
+                            const m = err.sqlMessage.match(/Unknown column '([^']+)' in 'INSERT INTO'/);
+                            if (m && m[1]) {
+                                const col = m[1];
+                                if (removed.has(col)) throw err;
+                                removed.add(col);
+                                delete payload[col];
+                                const camel = col.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+                                delete payload[camel];
+                                const snake = camel.replace(/([A-Z])/g, '_$1').toLowerCase();
+                                delete payload[snake];
+                                continue;
+                            }
+                        }
+                        throw err;
                     }
-                });
-            });
+                }
+            }
+
+            await safeInsert('users', newUser);
 
             return NextResponse.redirect(new URL(`/login?token=${token}`, request.url));
         }
