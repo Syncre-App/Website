@@ -23,7 +23,6 @@ export default function Home() {
         },
     ];
 
-    // Fade-in animation hook with stagger support
     function useFadeInOnScroll(length: number) {
         const ref = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -35,7 +34,6 @@ export default function Home() {
                 (entries) => {
                     entries.forEach((entry) => {
                         if (entry.isIntersecting) {
-                            // Add staggered delay based on data-index attribute
                             const el = entry.target as HTMLDivElement;
                             const index = Number(el.dataset.index ?? 0);
                             el.style.transitionDelay = `${index * 120}ms`;
