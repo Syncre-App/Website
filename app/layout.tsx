@@ -4,11 +4,11 @@ import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Syncre",
-  description: "A modern, open-source, cross-platform chat application.",
+  description: "Syncre is a secure, cross-platform mobile communication application built with React Native and Expo. It focuses on privacy and security through end-to-end encryption for all communications.",
   authors: [
     {
       name: "Syncre Team",
-      url: "https://git.devbeni.lol/Syncre",
+      url: "https://github.com/Syncre-App",
     },
   ],
   keywords: [
@@ -16,7 +16,6 @@ export const metadata: Metadata = {
     "Chat",
     "Open Source",
     "Cross Platform",
-    "Self-Hosted",
     "Modern Chat Application",
   ]
 };
