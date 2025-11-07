@@ -1,7 +1,7 @@
 "use client";
 import { Inter } from 'next/font/google';
 import { motion, Variants } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import Navbar from '../components/Navbar';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -29,40 +29,13 @@ const itemVariants: Variants = {
 };
 
 export default function Home() {
-  const [activeSection, setActiveSection] = useState("home");
   const homeRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const downloadRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY + 120; // offset for navbar height
-      const sections = [
-        { id: "home", ref: homeRef },
-        { id: "about", ref: aboutRef },
-        { id: "download", ref: downloadRef },
-      ];
-      let current = "home";
-      for (const section of sections) {
-        if (section.ref.current) {
-          const top = section.ref.current.offsetTop;
-          if (scrollY >= top) {
-            current = section.id;
-          }
-        }
-      }
-      setActiveSection(current);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <>
-      <Navbar
-  
-      />
+      <Navbar />
       <main className={`flex flex-col min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white ${inter.className}`}>
         <section ref={homeRef} id="home" className="flex flex-col items-center justify-center text-center min-h-screen w-full px-6 py-20 md:py-32">
           <motion.div

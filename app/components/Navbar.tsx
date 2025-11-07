@@ -1,27 +1,12 @@
 "use client";
 
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { FiHome, FiInfo, FiUsers, FiLogIn, FiChevronDown, FiLogOut, FiSettings, FiUser, FiMessageSquare, FiBell, FiX, FiCheck, FiDownload } from 'react-icons/fi';
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import Image from 'next/image';
+import { FiHome, FiInfo, FiDownload } from 'react-icons/fi';
+import { useState, useEffect, useRef } from 'react';
 
-interface Notification {
-  id: string;
-  title: string;
-  userid: string;
-  type?: string;
-  read?: boolean;
-}
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  profile_picture: string;
-  notifications: Notification[];
-}
 
 const navLinks = [
   { href: '/', label: 'Home', icon: <FiHome size={18} /> },
@@ -31,14 +16,8 @@ const navLinks = [
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notificationPage, setNotificationPage] = useState(0);
   const [activePath, setActivePath] = useState(pathname);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -73,30 +52,6 @@ const Navbar = () => {
       setActivePath(pathname);
     }
   }, [pathname, isScrolling]);
-
-  const unreadNotificationsCount = user?.notifications?.filter(n => !n.read)?.length || 0;
-  const paginatedNotifications = user?.notifications?.slice(notificationPage * 5, (notificationPage * 5) + 5) || [];
-  const totalPages = Math.ceil((user?.notifications?.length || 0) / 5);
-
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    const links = Array.from(containerRef.current.querySelectorAll("a"));
-    const idx = navLinks.findIndex(link => link.href === activePath);
-    if (idx !== -1 && links[idx]) {
-      const rect = (links[idx] as HTMLElement).getBoundingClientRect();
-      const parentRect = containerRef.current.getBoundingClientRect();
-      setIndicatorStyle({
-        left: rect.left - parentRect.left,
-        width: rect.width,
-      });
-    }
-  }, [activePath, navLinks]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsDropdownOpen(false);
-  };
 
   // Chat UI removed — no remote or authenticated features
 
