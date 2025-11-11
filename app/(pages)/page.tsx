@@ -82,17 +82,8 @@ export default function Home() {
       <Navbar />
       <main
         ref={canvasRef}
-        className={`relative min-h-screen overflow-hidden bg-gradient-to-b from-gray-950 via-black to-gray-900 text-white ${jakarta.variable} ${grotesk.variable}`}
+        className={`relative min-h-screen overflow-hidden text-white ${jakarta.variable} ${grotesk.variable}`}
       >
-        <motion.div
-          className="pointer-events-none absolute inset-0 blur-[140px]"
-          style={{
-            background:
-              'radial-gradient(circle at 20% 20%, rgba(37,99,235,0.35), transparent 55%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.3), transparent 45%), radial-gradient(circle at 50% 80%, rgba(15,23,42,0.7), transparent 60%)',
-            y: glowY,
-            opacity: glowOpacity,
-          }}
-        />
         <section
           id="hero"
           className="relative z-10 mx-auto flex w-full max-w-[1100px] flex-col items-center px-6 pt-40 pb-24 text-center"

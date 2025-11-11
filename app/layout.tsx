@@ -31,6 +31,7 @@ export default function RootLayout({
       <Analytics />
       <html lang="en">
         <body>
+          <div className="app-bg" aria-hidden="true" />
           {children}
         </body>
       </html>
