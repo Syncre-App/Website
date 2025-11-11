@@ -10,8 +10,6 @@ const navLinks = [
   { href: '/#features', label: 'Features' },
   { href: '/#app', label: 'App' },
   { href: '/#team', label: 'Team' },
-  { href: '/#early-access', label: 'Early Access' },
-  { href: '/privacy', label: 'Privacy' },
 ];
 
 const sectionLinks = navLinks.filter((link) => link.href.startsWith('/#'));

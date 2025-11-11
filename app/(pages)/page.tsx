@@ -63,12 +63,7 @@ const teamMembers = [
   {
     name: 'Benedek Balló',
     role: 'Product & iOS lead',
-    note: 'Designs the calm, Apple-inspired look and ships the Expo client.',
-  },
-  {
-    name: 'Syncre contributors',
-    role: 'Backend & security',
-    note: 'Maintain the Express API, WebSocket gateway, and encryption tooling.',
+    note: 'Designs the calm, builds the app and the backend.',
   },
 ];
 
@@ -102,22 +97,14 @@ export default function Home() {
           id="hero"
           className="relative z-10 mx-auto flex w-full max-w-[1100px] flex-col items-center px-6 pt-40 pb-24 text-center"
         >
-          <motion.span
-            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-300"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            Private beta · Apple-inspired calm
-          </motion.span>
-          <motion.h1
-            className="mt-6 text-4xl font-semibold leading-tight text-balance sm:text-5xl lg:text-6xl"
+            <motion.h1
+            className="mt-6 text-4xl font-semibold leading-tight text-balance sm:text-5xl lg:text-6xl bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-600 bg-clip-text text-transparent"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.7, ease: 'easeOut' }}
-          >
-            The privacy-first messenger draped in Syncre&apos;s original deep blues.
-          </motion.h1>
+            >
+            Syncre
+            </motion.h1>
           <motion.p
             className="mt-6 max-w-3xl text-lg text-gray-300"
             initial={{ opacity: 0, y: 40 }}
