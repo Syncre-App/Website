@@ -22,100 +22,62 @@ const grotesk = Space_Grotesk({
 const heroHighlights = [
   {
     label: 'Encryption',
-    value: 'Double ratchet + MLS',
-    detail: 'Post-quantum ready keys rotate with every sync.',
+    value: 'End-to-end by default',
+    detail: 'Chats, calls, and media stay private.',
   },
   {
-    label: 'Sync latency',
-    value: '<120 ms',
-    detail: 'Edge relays keep conversations feeling instant.',
+    label: 'Platforms',
+    value: 'iOS · Android · Web',
+    detail: 'Built with React Native, Expo, and Next.js.',
   },
   {
-    label: 'Privacy model',
-    value: 'Zero ads, zero tracking',
-    detail: 'Metadata minimised. No pixels, no guessing.',
+    label: 'Team',
+    value: 'Syncre Collective',
+    detail: 'Indie builders in Budapest and Berlin.',
   },
 ];
 
 const featureCards = [
   {
-    accent: 'Continuity',
-    title: 'Handoff without thinking about it',
-    copy: 'Pick up a conversation on any device and every tap, scroll, and cursor position follows.',
-    stat: 'State restore under 500 ms',
+    accent: 'Chats & groups',
+    title: 'Secure conversations',
+    copy: '1:1, group, and broadcast chats with disappearing messages, media reactions, and read receipts that you control.',
   },
   {
-    accent: 'Presence',
-    title: 'Live activity layers',
-    copy: 'Act on invites, share media, or confirm payments inline. Less app switching, more doing.',
-    stat: 'Context cards for any message',
+    accent: 'Voice & video',
+    title: 'Crystal-clear calls',
+    copy: 'Low-latency calls with optional voice notes so quick updates never require typing.',
   },
   {
-    accent: 'Media',
-    title: 'Depth-crafted sharing',
-    copy: 'Lossless photos, Dolby spatial audio notes, and HDR video with adaptive blur for previews.',
-    stat: 'Local on-device effects',
+    accent: 'Sync',
+    title: 'One account everywhere',
+    copy: 'Hop between phone, tablet, and web—the same encrypted history follows instantly.',
   },
   {
-    accent: 'Trust',
-    title: 'Transparent firmware',
-    copy: 'Open-source clients, reproducible builds, and remote attestation before every log in.',
-    stat: 'Public attest proofs',
+    accent: 'Status',
+    title: 'Presence you can trust',
+    copy: 'Share availability, automate focus modes, and pause notifications with one tap.',
   },
 ];
 
-const securityStack = [
-  {
-    title: 'End-to-end by default',
-    detail: 'Modern Signal-style double ratchet + Messaging Layer Security (MLS) for groups.',
-  },
-  {
-    title: 'Ephemeral routing',
-    detail: 'Metadata minimized with rotating relays and sealed sender addresses.',
-  },
-  {
-    title: 'Zero-knowledge storage',
-    detail: 'Attachments in Drive or local disk use envelope encryption with customer-held keys.',
-  },
+const useCases = [
+  'Stay in touch with close friends without ads or data mining.',
+  'Coordinate side projects and indie teams with fast media sharing.',
+  'Plan trips, events, or study sessions using shared lists and reminders.',
+  'Keep family photos and voice notes synced privately across devices.',
 ];
 
-const craftSteps = [
+const teamMembers = [
   {
-    title: 'Design the conversation',
-    detail: 'Frictionless flows, tactile haptics, typography that lets content breathe.',
+    name: 'Benedek Balló',
+    role: 'Product & iOS lead',
+    note: 'Designs the calm, Apple-inspired look and ships the Expo client.',
   },
   {
-    title: 'Secure every edge',
-    detail: 'Transport, storage, identity, recovery—all auditable and documented.',
+    name: 'Syncre contributors',
+    role: 'Backend & security',
+    note: 'Maintain the Express API, WebSocket gateway, and encryption tooling.',
   },
-  {
-    title: 'Ship with intention',
-    detail: 'Tight feedback loops with our private beta community guide every release.',
-  },
-];
-
-const aboutHighlights = [
-  {
-    title: 'Mobile-first Syncre app',
-    detail:
-      'Built inside the Mobile workspace with React Native and Expo so iOS and Android stay in lockstep, even for native modules.',
-  },
-  {
-    title: 'Backend that respects privacy',
-    detail:
-      'Express, WebSocket, and MySQL services in Backend/ keep end-to-end encryption effortless while routing push tokens securely.',
-  },
-  {
-    title: 'Website as the open door',
-    detail:
-      'This Next.js site surfaces the roadmap, support addresses, and documentation so anyone can evaluate Syncre before installing.',
-  },
-];
-
-const platformStats = [
-  { label: 'Platforms', value: 'iOS · Android · Web' },
-  { label: 'Stack', value: 'React Native · Next.js · Express · MySQL' },
-  { label: 'Security', value: 'End-to-end encryption + secure storage' },
 ];
 
 export default function Home() {
@@ -232,179 +194,102 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="mt-20 w-full overflow-hidden rounded-[36px] border border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-1 shadow-[0_30px_120px_rgba(0,0,0,0.65)]"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            className="mt-20 w-full rounded-[36px] border border-white/10 bg-gradient-to-br from-blue-600/20 via-slate-900/70 to-gray-900/80 px-8 py-12 text-left shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
-            <div className="rounded-[32px] bg-[#050505]/90 px-8 py-12 backdrop-blur-3xl">
-              <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Designed like hardware</p>
-              <h2 className="mt-4 text-3xl font-semibold text-white lg:text-4xl">
-                Motion that breathes, depth that responds, interactions choreographed with haptics.
-              </h2>
-              <p className="mt-4 max-w-3xl text-base text-gray-300">
-                The interface gently tilts with your scroll, glass surfaces react to ambient light, and typography stays
-                crisp on every display. Syncre borrows the calm of Apple&apos;s best product launches and turns it into a
-                daily habit.
-              </p>
-            </div>
+            <p className="text-sm uppercase tracking-[0.4em] text-blue-200">App motto</p>
+            <h2 className="mt-4 text-3xl font-semibold text-white lg:text-4xl">
+              Talk freely. Stay close. Own your data.
+            </h2>
+            <p className="mt-4 max-w-3xl text-base text-gray-200">
+              Syncre keeps things simple: beautiful blue gradients, fast syncing, and privacy that is on by default. No
+              algorithms, no ads—just a direct line to the people you trust most.
+            </p>
           </motion.div>
         </section>
 
-        <section id="about" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-16">
-          <div className="rounded-[36px] border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/70 to-gray-900/80 p-10 backdrop-blur-2xl">
-            <div className="grid gap-10 lg:grid-cols-2">
+        <section id="features" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-20">
+          <div className="grid gap-6 md:grid-cols-2">
+            {featureCards.map((feature) => (
+              <div
+                key={feature.title}
+                className="rounded-[28px] border border-white/10 bg-gradient-to-b from-white/10 to-white/0 p-6 backdrop-blur-2xl"
+              >
+                <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">{feature.accent}</p>
+                <h3 className="mt-3 text-xl font-semibold text-white">{feature.title}</h3>
+                <p className="mt-2 text-sm text-gray-300">{feature.copy}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="app" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-20">
+          <div className="rounded-[32px] border border-white/10 bg-white/5 p-10 backdrop-blur-2xl">
+            <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">Mire jó?</p>
+            <h2 className="mt-3 text-3xl font-semibold text-white">Mit tud a Syncre app?</h2>
+            <p className="mt-4 text-gray-200">
+              Egyetlen letisztult appban kapod meg a chat, médiamegosztás, státusz és hívás élményt—mindegy, hogy iOS-en,
+              Androidon vagy a weben nyitod meg.
+            </p>
+            <ul className="mt-8 space-y-4 text-sm text-gray-200">
+              {useCases.map((item) => (
+                <li key={item} className="flex items-start gap-3">
+                  <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-blue-400" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section id="team" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-20">
+          <div className="rounded-[32px] border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/70 to-gray-900/80 p-10 backdrop-blur-2xl">
+            <div className="grid gap-8 lg:grid-cols-2">
               <div>
-                <p className="text-sm uppercase tracking-[0.4em] text-blue-300/80">About Syncre</p>
-                <h2 className="mt-3 text-3xl font-semibold text-white">
-                  The same Syncre colors, now with a deeper story about the app.
-                </h2>
+                <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">Készítők</p>
+                <h2 className="mt-3 text-3xl font-semibold text-white">Syncre Collective</h2>
                 <p className="mt-4 text-gray-200">
-                  Syncre was born as a minimal blue-and-slate mobile client. Today it is a full stack platform: the
-                  Mobile workspace handles the React Native + Expo experience, Backend/ exposes REST and WebSocket
-                  routes, and this Website workspace keeps legal docs, account removal steps, and landing content in
-                  sync.
+                  Egy kis csapat, aki hisz abban, hogy a modern chat lehet gyönyörű és nagyon privát egyszerre.
+                  Budapest és Berlin között dolgozunk, nyílt forráskódú eszközökkel.
                 </p>
-                <ul className="mt-6 space-y-4 text-sm text-gray-300">
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-blue-400" />
-                    Mobile clients ship secure storage, biometrics, offline send queues, and native camera effects.
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-blue-400" />
-                    Backend services in <code className="rounded bg-white/10 px-1 text-white/90">Backend/src</code> keep
-                    E2E encryption, push notifications, and friend presence locked down.
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-blue-400" />
-                    Website/ documents privacy, account removal, and the product roadmap so anyone can evaluate Syncre.
-                  </li>
-                </ul>
+                <div className="mt-6 space-y-3">
+                  {teamMembers.map((member) => (
+                    <div key={member.name} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <p className="text-lg font-semibold text-white">{member.name}</p>
+                      <p className="text-sm text-blue-200">{member.role}</p>
+                      <p className="mt-2 text-sm text-gray-300">{member.note}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="grid gap-6">
-                {aboutHighlights.map((item) => (
-                  <div key={item.title} className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                    <h3 className="text-xl font-semibold text-white">{item.title}</h3>
-                    <p className="mt-2 text-sm text-gray-300">{item.detail}</p>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-gray-200">
+                <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Elérhetőségek</p>
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <p className="text-white font-semibold">Email</p>
+                    <a className="text-blue-200 hover:text-white" href="mailto:info@syncre.xyz">
+                      info@syncre.xyz
+                    </a>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {platformStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-800/60 to-gray-900/40 p-4 text-center"
-                >
-                  <p className="text-xs uppercase tracking-[0.4em] text-gray-400">{stat.label}</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{stat.value}</p>
+                  <div>
+                    <p className="text-white font-semibold">Adattörlés</p>
+                    <Link className="text-blue-200 hover:text-white" href="/remove-my-account">
+                      /remove-my-account
+                    </Link>
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold">Adatvédelem</p>
+                    <Link className="text-blue-200 hover:text-white" href="/privacy">
+                      /privacy
+                    </Link>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="product" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-24">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <motion.div
-              className="rounded-[32px] border border-white/10 bg-white/5 p-10 backdrop-blur-2xl"
-              whileHover={{ y: -6 }}
-              transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-            >
-              <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Product system</p>
-              <h2 className="mt-4 text-3xl font-semibold text-white">One fluid surface across every Apple device.</h2>
-              <p className="mt-4 text-gray-300">
-                Built with Expo, React Native, and a shared design language. Syncre adapts to iOS, iPadOS, macOS, and
-                the web with pixel-perfect layouts, dynamic color, and buttery 120 Hz-ready transitions.
-              </p>
-              <ul className="mt-6 space-y-4 text-sm text-gray-200">
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-white" />
-                  Adaptive typography with SF-friendly metrics.
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-white" />
-                  Real-time collaboration canvas for lists, ideas, and approvals.
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-white" />
-                  Inline media editor with depth estimation and portrait relighting.
-                </li>
-              </ul>
-            </motion.div>
-            <div className="grid gap-6 md:grid-cols-2">
-              {featureCards.map((feature) => (
-                <motion.div
-                  key={feature.title}
-                  className="rounded-[28px] border border-white/10 bg-gradient-to-b from-white/10 to-white/0 p-6 backdrop-blur-2xl"
-                  whileHover={{ y: -6 }}
-                  transition={{ type: 'spring', stiffness: 140, damping: 18 }}
-                >
-                  <p className="text-xs uppercase tracking-[0.4em] text-gray-500">{feature.accent}</p>
-                  <h3 className="mt-3 text-xl font-semibold text-white">{feature.title}</h3>
-                  <p className="mt-2 text-sm text-gray-300">{feature.copy}</p>
-                  <p className="mt-6 text-xs font-semibold uppercase tracking-[0.3em] text-gray-400">{feature.stat}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="security" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-24">
-          <motion.div
-            className="rounded-[36px] border border-white/10 bg-[#050607]/80 p-10 backdrop-blur-3xl"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Security stack</p>
-                <h2 className="mt-3 text-3xl font-semibold text-white">Auditable, encrypted, and transparent.</h2>
-              </div>
-              <span className="text-sm text-gray-400">
-                Infrastructure lives in the Backend workspace—documented in <span className="text-white">Backend/docs</span>.
-              </span>
-            </div>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {securityStack.map((item) => (
-                <div key={item.title} className="rounded-3xl border border-white/10 bg-white/5 p-6">
-                  <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm text-gray-300">{item.detail}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-10 grid gap-6 md:grid-cols-2">
-              <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#2a2f39] to-[#0f1114] p-8">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Live monitoring</p>
-                <h3 className="mt-3 text-2xl font-semibold">Signal health dashboards</h3>
-                <p className="mt-3 text-sm text-gray-300">
-                  Real-time audits, anomaly detection, and firmware attestation before devices get push tokens.
+                <p className="mt-6 text-gray-400">
+                  Írj, ha szeretnél betatesztelő lenni, hibát találtál, vagy kérdésed van a backendről és a biztonságról.
                 </p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#171a20] to-[#050505] p-8">
-                <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Developer trust</p>
-                <h3 className="mt-3 text-2xl font-semibold">Open keys, open docs</h3>
-                <p className="mt-3 text-sm text-gray-300">
-                  Each release comes with signed artifacts, schema diffs, and a curl-ready changelog to test instantly.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
-        <section className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-24">
-          <div className="rounded-[36px] border border-white/10 bg-white/5 p-10 backdrop-blur-2xl">
-            <p className="text-sm uppercase tracking-[0.4em] text-gray-500">How we build</p>
-            <div className="mt-8 grid gap-8 md:grid-cols-3">
-              {craftSteps.map((step) => (
-                <div key={step.title}>
-                  <p className="text-xs uppercase tracking-[0.3em] text-gray-400">Step</p>
-                  <h3 className="mt-2 text-xl font-semibold text-white">{step.title}</h3>
-                  <p className="mt-3 text-sm text-gray-300">{step.detail}</p>
-                </div>
-              ))}
             </div>
           </div>
         </section>
