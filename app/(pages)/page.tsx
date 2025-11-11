@@ -94,6 +94,30 @@ const craftSteps = [
   },
 ];
 
+const aboutHighlights = [
+  {
+    title: 'Mobile-first Syncre app',
+    detail:
+      'Built inside the Mobile workspace with React Native and Expo so iOS and Android stay in lockstep, even for native modules.',
+  },
+  {
+    title: 'Backend that respects privacy',
+    detail:
+      'Express, WebSocket, and MySQL services in Backend/ keep end-to-end encryption effortless while routing push tokens securely.',
+  },
+  {
+    title: 'Website as the open door',
+    detail:
+      'This Next.js site surfaces the roadmap, support addresses, and documentation so anyone can evaluate Syncre before installing.',
+  },
+];
+
+const platformStats = [
+  { label: 'Platforms', value: 'iOS · Android · Web' },
+  { label: 'Stack', value: 'React Native · Next.js · Express · MySQL' },
+  { label: 'Security', value: 'End-to-end encryption + secure storage' },
+];
+
 export default function Home() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -109,13 +133,13 @@ export default function Home() {
       <Navbar />
       <main
         ref={canvasRef}
-        className={`relative min-h-screen overflow-hidden bg-[#020203] text-white ${jakarta.variable} ${grotesk.variable}`}
+        className={`relative min-h-screen overflow-hidden bg-gradient-to-b from-gray-950 via-black to-gray-900 text-white ${jakarta.variable} ${grotesk.variable}`}
       >
         <motion.div
           className="pointer-events-none absolute inset-0 blur-[140px]"
           style={{
             background:
-              'radial-gradient(circle at 20% 20%, rgba(87,115,255,0.35), transparent 50%), radial-gradient(circle at 80% 10%, rgba(0,214,189,0.35), transparent 45%), radial-gradient(circle at 50% 80%, rgba(255,111,92,0.35), transparent 55%)',
+              'radial-gradient(circle at 20% 20%, rgba(37,99,235,0.35), transparent 55%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.3), transparent 45%), radial-gradient(circle at 50% 80%, rgba(15,23,42,0.7), transparent 60%)',
             y: glowY,
             opacity: glowOpacity,
           }}
@@ -138,7 +162,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.7, ease: 'easeOut' }}
           >
-            The privacy-first messenger that feels handcrafted for every Apple device you touch.
+            The privacy-first messenger draped in Syncre&apos;s original deep blues.
           </motion.h1>
           <motion.p
             className="mt-6 max-w-3xl text-lg text-gray-300"
@@ -146,8 +170,18 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7, ease: 'easeOut' }}
           >
-            Syncre pairs calm typography, cinematic motion, and signal-grade security so every chat feels effortless,
-            tactile, and trustworthy. Built with React Native, Expo, and a fully auditable backend.
+            Syncre is a secure, cross-platform communication app built inside our Mobile workspace with React Native and
+            Expo. The familiar gradient, softened glass, and blue accents mirror the very first Syncre mockups while the
+            experience scales beautifully across iOS, Android, and web.
+          </motion.p>
+          <motion.p
+            className="mt-4 max-w-3xl text-base text-gray-400"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.7, ease: 'easeOut' }}
+          >
+            Behind the calm UI lives an Express + WebSocket backend, MySQL persistence, and end-to-end encryption so
+            private groups, media drops, and device handoffs stay fast and trustworthy.
           </motion.p>
           <motion.div
             className="mt-10 flex flex-wrap items-center justify-center gap-4"
@@ -157,13 +191,13 @@ export default function Home() {
           >
             <a
               href="mailto:info@syncre.xyz?subject=Syncre%20Early%20Access"
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black shadow-lg shadow-blue-500/20 transition hover:-translate-y-0.5 hover:bg-blue-50"
+              className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition hover:-translate-y-0.5 hover:bg-blue-500"
             >
               Get early access
             </a>
             <Link
               href="/privacy"
-              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/5"
+              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
             >
               Explore our privacy promise
             </Link>
@@ -215,6 +249,59 @@ export default function Home() {
               </p>
             </div>
           </motion.div>
+        </section>
+
+        <section id="about" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-16">
+          <div className="rounded-[36px] border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/70 to-gray-900/80 p-10 backdrop-blur-2xl">
+            <div className="grid gap-10 lg:grid-cols-2">
+              <div>
+                <p className="text-sm uppercase tracking-[0.4em] text-blue-300/80">About Syncre</p>
+                <h2 className="mt-3 text-3xl font-semibold text-white">
+                  The same Syncre colors, now with a deeper story about the app.
+                </h2>
+                <p className="mt-4 text-gray-200">
+                  Syncre was born as a minimal blue-and-slate mobile client. Today it is a full stack platform: the
+                  Mobile workspace handles the React Native + Expo experience, Backend/ exposes REST and WebSocket
+                  routes, and this Website workspace keeps legal docs, account removal steps, and landing content in
+                  sync.
+                </p>
+                <ul className="mt-6 space-y-4 text-sm text-gray-300">
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-blue-400" />
+                    Mobile clients ship secure storage, biometrics, offline send queues, and native camera effects.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-blue-400" />
+                    Backend services in <code className="rounded bg-white/10 px-1 text-white/90">Backend/src</code> keep
+                    E2E encryption, push notifications, and friend presence locked down.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-blue-400" />
+                    Website/ documents privacy, account removal, and the product roadmap so anyone can evaluate Syncre.
+                  </li>
+                </ul>
+              </div>
+              <div className="grid gap-6">
+                {aboutHighlights.map((item) => (
+                  <div key={item.title} className="rounded-3xl border border-white/10 bg-white/5 p-6">
+                    <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                    <p className="mt-2 text-sm text-gray-300">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              {platformStats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-800/60 to-gray-900/40 p-4 text-center"
+                >
+                  <p className="text-xs uppercase tracking-[0.4em] text-gray-400">{stat.label}</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{stat.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section id="product" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-24">

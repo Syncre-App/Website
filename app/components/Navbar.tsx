@@ -7,6 +7,7 @@ import { useState, useEffect, useRef, MouseEvent } from 'react';
 
 const navLinks = [
   { href: '/', label: 'Overview' },
+  { href: '/#about', label: 'About' },
   { href: '/#product', label: 'Product' },
   { href: '/#security', label: 'Security' },
   { href: '/#early-access', label: 'Early Access' },
