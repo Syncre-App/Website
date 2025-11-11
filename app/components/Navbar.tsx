@@ -3,43 +3,37 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { FiHome, FiInfo, FiDownload } from 'react-icons/fi';
-import { useState, useEffect, useRef } from 'react';
-
-
+import { useState, useEffect, useRef, MouseEvent } from 'react';
 
 const navLinks = [
-  { href: '/', label: 'Home', icon: <FiHome size={18} /> },
-  { href: '/#about', label: 'About', icon: <FiInfo size={18} /> },
-  { href: '/#download', label: 'Download', icon: <FiDownload size={18} /> },
+  { href: '/', label: 'Overview' },
+  { href: '/#product', label: 'Product' },
+  { href: '/#security', label: 'Security' },
+  { href: '/#early-access', label: 'Early Access' },
+  { href: '/privacy', label: 'Privacy' },
 ];
+
+const sectionLinks = navLinks.filter((link) => link.href.startsWith('/#'));
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [activePath, setActivePath] = useState(pathname);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activePath, setActivePath] = useState(pathname || '/');
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // --- Scrollspy logic for section highlighting ---
   useEffect(() => {
     if (isScrolling) return;
     const handleScroll = () => {
-      const scrollY = window.scrollY + 120; // vissza az eredeti, nem a viewport közepét
-      const home = document.getElementById('home');
-      const about = document.getElementById('about');
-      const download = document.getElementById('download');
+      const offset = window.scrollY + 140;
       let current = '/';
-      if (home && about && download) {
-        if (scrollY >= download.offsetTop) {
-          current = '/#download';
-        } else if (scrollY >= about.offsetTop) {
-          current = '/#about';
-        } else {
-          current = '/';
+      sectionLinks.forEach((link) => {
+        const id = link.href.split('#')[1];
+        const el = document.getElementById(id);
+        if (el && offset >= el.offsetTop) {
+          current = link.href;
         }
-      }
-      setActivePath(current);
+      });
+      setActivePath((prev) => (prev.startsWith('/#') || prev === '/' ? current : prev));
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
@@ -47,23 +41,42 @@ const Navbar = () => {
   }, [isScrolling]);
 
   useEffect(() => {
-    // Csak akkor állítsd át activePath-et pathname-re, ha NEM szekciót nézel ("/", "/#about", "/#download") és nem scrollozol!
-    if (!isScrolling && !navLinks.some(link => link.href === pathname)) {
-      setActivePath(pathname);
+    if (isScrolling) return;
+    if (!sectionLinks.some((link) => link.href === pathname)) {
+      setActivePath(pathname || '/');
     }
   }, [pathname, isScrolling]);
 
-  // Chat UI removed — no remote or authenticated features
+  const handleSectionClick = (e: MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const id = href.split('#')[1];
+    const el = document.getElementById(id);
+    if (!el) return;
+    setIsScrolling(true);
+    setActivePath(href);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 700);
+  };
 
-  // Auth UI removed: no Login/Logout/Notifications in navbar
-  const renderAuthSection = () => null;
+  const handleHomeClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsScrolling(true);
+    setActivePath('/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 700);
+  };
 
   return (
-    <div className="fixed top-[30px] w-full flex justify-center z-50 px-4">
-      <nav
-        className="w-full max-w-[1000px] h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
-      >
-        <div className="flex items-center gap-x-2" ref={containerRef}>
+    <div className="fixed top-6 w-full flex justify-center z-50 px-4">
+      <nav className="w-full max-w-[1100px] h-[72px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-2xl px-6 border border-white/10 shadow-[0_10px_60px_rgba(15,15,20,0.45)]">
+        <div className="text-lg font-semibold tracking-tight text-white">Syncre</div>
+        <div className="flex items-center gap-x-1 flex-wrap justify-center">
           {navLinks.map((link) => {
             const isSectionLink = link.href.startsWith('/#');
             const isHome = link.href === '/';
@@ -74,51 +87,33 @@ const Navbar = () => {
                 scroll={false}
                 onClick={
                   isSectionLink
-                    ? (e) => {
-                        e.preventDefault();
-                        const id = link.href.split('#')[1];
-                        const el = document.getElementById(id);
-                        if (el) {
-                          setIsScrolling(true);
-                          setActivePath(link.href);
-                          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-                          scrollTimeout.current = setTimeout(() => {
-                            setIsScrolling(false);
-                          }, 700);
-                        }
-                      }
+                    ? (e) => handleSectionClick(e, link.href)
                     : isHome
-                    ? (e) => {
-                        e.preventDefault();
-                        setIsScrolling(true);
-                        setActivePath('/');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-                        scrollTimeout.current = setTimeout(() => {
-                          setIsScrolling(false);
-                        }, 700);
-                      }
+                    ? handleHomeClick
                     : undefined
                 }
-                className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${
-                  activePath === link.href ? 'text-white' : 'text-gray-300'
+                className={`relative px-4 py-2 text-sm font-medium rounded-full transition-colors ${
+                  activePath === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
                 }`}
               >
                 {activePath === link.href && (
                   <motion.div
                     layoutId="active-nav-pill"
-                    className="absolute inset-0 bg-blue-600 rounded-full"
-                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    className="absolute inset-0 bg-white/15 rounded-full"
+                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                   />
                 )}
-                <span className="relative z-10">{link.icon}</span>
-                <span className={`relative z-10 ${activePath === link.href ? 'inline' : 'hidden'} md:inline`}>{link.label}</span>
+                <span className="relative z-10">{link.label}</span>
               </Link>
             );
           })}
         </div>
-        {renderAuthSection()}
+        <a
+          href="mailto:info@syncre.xyz?subject=Syncre%20Early%20Access"
+          className="text-sm font-semibold text-black bg-white rounded-full px-5 py-2 shadow-xl shadow-blue-500/20 hover:bg-blue-50 transition-colors"
+        >
+          Request Access
+        </a>
       </nav>
     </div>
   );
