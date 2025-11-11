@@ -74,8 +74,6 @@ export default function Home() {
     offset: ['start start', 'end end'],
   });
 
-  const glowY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
-  const glowOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.4]);
 
   return (
     <>
@@ -89,7 +87,7 @@ export default function Home() {
           className="relative z-10 mx-auto flex w-full max-w-[1100px] flex-col items-center px-6 pt-40 pb-24 text-center"
         >
             <motion.h1
-            className="mt-6 text-4xl font-semibold leading-tight text-balance sm:text-5xl lg:text-6xl bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-600 bg-clip-text text-transparent"
+            className="mt-6 text-4xl font-bold leading-tight text-balance sm:text-5xl lg:text-8xl text-white"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.7, ease: 'easeOut' }}
@@ -105,15 +103,6 @@ export default function Home() {
             Syncre is a secure, cross-platform communication app built inside our Mobile workspace with React Native and
             Expo. The familiar gradient, softened glass, and blue accents mirror the very first Syncre mockups while the
             experience scales beautifully across iOS, Android, and web.
-          </motion.p>
-          <motion.p
-            className="mt-4 max-w-3xl text-base text-gray-400"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25, duration: 0.7, ease: 'easeOut' }}
-          >
-            Behind the calm UI lives an Express + WebSocket backend, MySQL persistence, and end-to-end encryption so
-            private groups, media drops, and device handoffs stay fast and trustworthy.
           </motion.p>
           <motion.div
             className="mt-10 flex flex-wrap items-center justify-center gap-4"
