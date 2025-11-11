@@ -25,16 +25,8 @@ const heroHighlights = [
     value: 'End-to-end by default',
     detail: 'Chats, calls, and media stay private.',
   },
-  {
-    label: 'Platforms',
-    value: 'iOS · Android · Web',
-    detail: 'Built with React Native, Expo, and Next.js.',
-  },
-  {
-    label: 'Team',
-    value: 'Syncre Collective',
-    detail: 'Indie builders in Budapest and Berlin.',
-  },
+  { label: 'Platforms', value: 'iOS · Android · Web', detail: 'Built with React Native, Expo, and Next.js.' },
+  { label: 'Team', value: 'Syncre Collective', detail: 'Indie builders in Budapest and Berlin.' },
 ];
 
 const featureCards = [
@@ -62,7 +54,7 @@ const featureCards = [
 
 const useCases = [
   'Stay in touch with close friends without ads or data mining.',
-  'Coordinate side projects and indie teams with fast media sharing.',
+  'Coordinate side projects and indie crews with fast media sharing.',
   'Plan trips, events, or study sessions using shared lists and reminders.',
   'Keep family photos and voice notes synced privately across devices.',
 ];
@@ -199,10 +191,10 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
-            <p className="text-sm uppercase tracking-[0.4em] text-blue-200">App motto</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white lg:text-4xl">
-              Talk freely. Stay close. Own your data.
-            </h2>
+    <p className="text-sm uppercase tracking-[0.4em] text-blue-200">App motto</p>
+    <h2 className="mt-4 text-3xl font-semibold text-white lg:text-4xl">
+      Talk freely. Stay close. Own your data.
+    </h2>
             <p className="mt-4 max-w-3xl text-base text-gray-200">
               Syncre keeps things simple: beautiful blue gradients, fast syncing, and privacy that is on by default. No
               algorithms, no ads—just a direct line to the people you trust most.
@@ -227,11 +219,10 @@ export default function Home() {
 
         <section id="app" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-20">
           <div className="rounded-[32px] border border-white/10 bg-white/5 p-10 backdrop-blur-2xl">
-            <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">Mire jó?</p>
-            <h2 className="mt-3 text-3xl font-semibold text-white">Mit tud a Syncre app?</h2>
+            <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">What&apos;s inside?</p>
+            <h2 className="mt-3 text-3xl font-semibold text-white">What Syncre delivers.</h2>
             <p className="mt-4 text-gray-200">
-              Egyetlen letisztult appban kapod meg a chat, médiamegosztás, státusz és hívás élményt—mindegy, hogy iOS-en,
-              Androidon vagy a weben nyitod meg.
+              One calm app for chat, media, presence, and calls—no matter if you open it on iOS, Android, or the web.
             </p>
             <ul className="mt-8 space-y-4 text-sm text-gray-200">
               {useCases.map((item) => (
@@ -248,11 +239,11 @@ export default function Home() {
           <div className="rounded-[32px] border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/70 to-gray-900/80 p-10 backdrop-blur-2xl">
             <div className="grid gap-8 lg:grid-cols-2">
               <div>
-                <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">Készítők</p>
+                <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">Team</p>
                 <h2 className="mt-3 text-3xl font-semibold text-white">Syncre Collective</h2>
                 <p className="mt-4 text-gray-200">
-                  Egy kis csapat, aki hisz abban, hogy a modern chat lehet gyönyörű és nagyon privát egyszerre.
-                  Budapest és Berlin között dolgozunk, nyílt forráskódú eszközökkel.
+                  We&apos;re a small team obsessed with making modern chat both beautiful and private. We work between
+                  Budapest and Berlin with open-source tools.
                 </p>
                 <div className="mt-6 space-y-3">
                   {teamMembers.map((member) => (
@@ -265,7 +256,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-gray-200">
-                <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Elérhetőségek</p>
+                <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Contact</p>
                 <div className="mt-4 space-y-4">
                   <div>
                     <p className="text-white font-semibold">Email</p>
@@ -274,20 +265,21 @@ export default function Home() {
                     </a>
                   </div>
                   <div>
-                    <p className="text-white font-semibold">Adattörlés</p>
+                    <p className="text-white font-semibold">Account removal</p>
                     <Link className="text-blue-200 hover:text-white" href="/remove-my-account">
                       /remove-my-account
                     </Link>
                   </div>
                   <div>
-                    <p className="text-white font-semibold">Adatvédelem</p>
+                    <p className="text-white font-semibold">Privacy</p>
                     <Link className="text-blue-200 hover:text-white" href="/privacy">
                       /privacy
                     </Link>
                   </div>
                 </div>
                 <p className="mt-6 text-gray-400">
-                  Írj, ha szeretnél betatesztelő lenni, hibát találtál, vagy kérdésed van a backendről és a biztonságról.
+                  Drop us a line if you want to join the beta, found a bug, or want to talk about the backend and
+                  security model.
                 </p>
               </div>
             </div>
