@@ -73,9 +73,9 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-6 w-full flex justify-center z-50 px-4">
-      <nav className="w-full max-w-[1100px] h-[72px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-2xl px-6 border border-white/10 shadow-[0_10px_60px_rgba(15,15,20,0.45)]">
+      <nav className="relative w-full max-w-[1100px] min-h-[72px] flex items-center rounded-full bg-white/5 backdrop-blur-2xl px-6 border border-white/10 shadow-[0_10px_60px_rgba(15,15,20,0.45)]">
         <div className="text-lg font-semibold tracking-tight text-white">Syncre</div>
-        <div className="flex items-center gap-x-1 flex-wrap justify-center">
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-x-1 flex-wrap justify-center">
           {navLinks.map((link) => {
             const isSectionLink = link.href.startsWith('/#');
             const isHome = link.href === '/';
@@ -107,12 +107,6 @@ const Navbar = () => {
             );
           })}
         </div>
-        <a
-          href="mailto:info@syncre.xyz?subject=Syncre%20Early%20Access"
-          className="text-sm font-semibold text-black bg-white rounded-full px-5 py-2 shadow-xl shadow-blue-500/20 hover:bg-blue-50 transition-colors"
-        >
-          Request Access
-        </a>
       </nav>
     </div>
   );
