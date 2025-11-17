@@ -313,13 +313,12 @@ export default function Home() {
                   target="_blank"
                   rel="noreferrer"
                   aria-busy={isLoadingAndroidApk}
-                  className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:-translate-y-0.5 hover:bg-white/90"
+                  className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-white/90"
                 >
-                  {isLoadingAndroidApk ? 'Fetching latest build…' : 'Download APK'}
+                  <span className="font-semibold text-gray-900">
+                    {isLoadingAndroidApk ? 'Fetching latest build…' : 'Download APK'}
+                  </span>
                 </a>
-                <p className="mt-2 text-xs text-gray-400">
-                  {isLoadingAndroidApk ? 'Checking GitHub for the newest release link.' : 'Pulls straight from the newest GitHub release.'}
-                </p>
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
                 <p className="text-sm font-semibold text-white">Apple TestFlight</p>
@@ -330,9 +329,9 @@ export default function Home() {
                   href={TESTFLIGHT_JOIN_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:-translate-y-0.5 hover:bg-white/90"
+                  className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-white/90"
                 >
-                  Download on TestFlight
+                  <span className="font-semibold text-gray-900">Download on TestFlight</span>
                 </a>
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
@@ -343,12 +342,6 @@ export default function Home() {
                 <p className="mt-4 text-xs text-gray-500">Sign up so we can ping you when it ships.</p>
               </div>
             </div>
-            <Link
-              href="/remove-my-account"
-              className="mt-8 inline-flex rounded-full border border-white/20 px-8 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/5"
-            >
-              Need to delete your data?
-            </Link>
           </motion.div>
         </section>
         <Footer />
