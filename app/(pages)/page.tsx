@@ -101,18 +101,6 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <a
-              href="mailto:info@syncre.xyz?subject=Syncre%20Early%20Access"
-              className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/40 transition hover:-translate-y-0.5 hover:bg-blue-500"
-            >
-              Get early access
-            </a>
-            <Link
-              href="/privacy"
-              className="rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
-            >
-              Explore our privacy promise
-            </Link>
           </motion.div>
 
           <motion.div
