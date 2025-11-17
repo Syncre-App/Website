@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { motion } from 'framer-motion';
 import { Plus_Jakarta_Sans, Space_Grotesk } from 'next/font/google';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -68,18 +67,10 @@ const teamMembers = [
 ];
 
 export default function Home() {
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: canvasRef,
-    offset: ['start start', 'end end'],
-  });
-
-
   return (
     <>
       <Navbar />
       <main
-        ref={canvasRef}
         className={`relative min-h-screen overflow-hidden text-white ${jakarta.variable} ${grotesk.variable}`}
       >
         <section
