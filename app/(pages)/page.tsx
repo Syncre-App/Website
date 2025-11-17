@@ -266,16 +266,16 @@ export default function Home() {
                 <p className="mt-2 text-sm text-gray-300">
                   Grab the freshest APK directly from our public GitHub releases.
                 </p>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-3">
                   <a
                     href="https://github.com/Syncre-App/Mobile/releases"
-                    className="rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white transition hover:border-white hover:bg-white/10"
+                    className="inline-flex items-center justify-center rounded-full border border-white/30 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-white hover:bg-white/10"
                   >
                     View releases
                   </a>
                   <a
                     href="https://github.com/Syncre-App/Mobile/releases/download/v1.0.7/app-release.apk"
-                    className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-black transition hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:-translate-y-0.5 hover:bg-white/90"
                   >
                     Latest APK
                   </a>
@@ -288,7 +288,7 @@ export default function Home() {
                 </p>
                 <a
                   href="https://testflight.apple.com/join/nVdAZ54W"
-                  className="mt-4 inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold text-black transition hover:-translate-y-0.5"
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:-translate-y-0.5 hover:bg-white/90"
                 >
                   Open TestFlight
                 </a>
