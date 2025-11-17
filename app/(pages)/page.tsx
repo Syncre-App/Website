@@ -261,6 +261,47 @@ export default function Home() {
               Tell us about your team, the platforms you use, and what you expect from a private messenger. We respond to
               every request.
             </p>
+            <div className="mt-8 grid gap-4 text-left md:grid-cols-3">
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
+                <p className="text-sm font-semibold text-white">Android beta</p>
+                <p className="mt-2 text-sm text-gray-300">
+                  Grab the freshest APK directly from our public GitHub releases.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <a
+                    href="https://github.com/Syncre-App/Mobile/releases"
+                    className="rounded-full border border-white/30 px-4 py-2 text-xs font-semibold text-white transition hover:border-white hover:bg-white/10"
+                  >
+                    View releases
+                  </a>
+                  <a
+                    href="https://github.com/Syncre-App/Mobile/releases/download/v1.0.7/app-release.apk"
+                    className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-black transition hover:-translate-y-0.5"
+                  >
+                    Latest APK
+                  </a>
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
+                <p className="text-sm font-semibold text-white">Apple TestFlight</p>
+                <p className="mt-2 text-sm text-gray-300">
+                  Join the TestFlight to install the current iOS beta build.
+                </p>
+                <a
+                  href="https://testflight.apple.com/join/nVdAZ54W"
+                  className="mt-4 inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold text-black transition hover:-translate-y-0.5"
+                >
+                  Open TestFlight
+                </a>
+              </div>
+              <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
+                <p className="text-sm font-semibold text-white">Web coming soon</p>
+                <p className="mt-2 text-sm text-gray-300">
+                  We&apos;re polishing the web client and will share early builds once it&apos;s ready for testers.
+                </p>
+                <p className="mt-4 text-xs text-gray-500">Sign up so we can ping you when it ships.</p>
+              </div>
+            </div>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <a
                 href="mailto:info@syncre.xyz?subject=Syncre%20Early%20Access&body=Hi%20Syncre%20team,%0D%0A%0D%0AWe%27d%20love%20to%20join%20the%20beta.%20Here%27s%20our%20use%20case..."
