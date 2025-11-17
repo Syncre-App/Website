@@ -277,7 +277,7 @@ export default function Home() {
                     href="https://github.com/Syncre-App/Mobile/releases/download/v1.0.7/app-release.apk"
                     className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:-translate-y-0.5 hover:bg-white/90"
                   >
-                    Latest APK
+                    <span className="font-semibold text-gray-900">Latest APK</span>
                   </a>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function Home() {
                   href="https://testflight.apple.com/join/nVdAZ54W"
                   className="mt-4 inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 transition hover:-translate-y-0.5 hover:bg-white/90"
                 >
-                  Open TestFlight
+                  <span className="font-semibold text-gray-900">Open TestFlight</span>
                 </a>
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
