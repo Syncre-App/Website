@@ -104,7 +104,7 @@ const Navbar = () => {
         <div className="text-lg font-semibold tracking-tight text-white">Syncre</div>
         <div
           ref={linksContainerRef}
-          className="absolute left-1/2 -translate-x-1/2 flex items-center gap-x-1 flex-wrap justify-center relative"
+          className="absolute left-1/2 -translate-x-1/2 flex items-center gap-x-1 flex-wrap justify-center"
         >
           {indicator && (
             <motion.div
