@@ -10,7 +10,7 @@ const navLinks = [
   { href: '/#features', label: 'Features' },
   { href: '/#app', label: 'App' },
   { href: '/#team', label: 'Team' },
-  { href: '/chat', label: 'Web chat' },
+  // { href: '/chat', label: 'Web chat' },
 ];
 
 const sectionLinks = navLinks.filter((link) => link.href.startsWith('/#'));
