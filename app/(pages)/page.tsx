@@ -59,14 +59,6 @@ const useCases = [
   'Keep family photos and voice notes synced privately across devices.',
 ];
 
-const teamMembers = [
-  {
-    name: 'Benedek Balló',
-    role: 'Product & iOS lead',
-    note: 'Designs the calm, builds the app and the backend.',
-  },
-];
-
 type GithubAsset = {
   browser_download_url?: string;
   name?: string;
@@ -232,57 +224,6 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-          </div>
-        </section>
-
-        <section id="team" className="relative z-10 mx-auto w-full max-w-[1100px] px-6 py-20">
-          <div className="rounded-[32px] border border-white/10 bg-gradient-to-br from-gray-900/80 via-black/70 to-gray-900/80 p-10 backdrop-blur-2xl">
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">Team</p>
-                <h2 className="mt-3 text-3xl font-semibold text-white">Syncre Collective</h2>
-                <p className="mt-4 text-gray-200">
-                  We&apos;re a small team obsessed with making modern chat both beautiful and private. We work between
-                  Budapest and Berlin with open-source tools.
-                </p>
-                <div className="mt-6 space-y-3">
-                  {teamMembers.map((member) => (
-                    <div key={member.name} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-lg font-semibold text-white">{member.name}</p>
-                      <p className="text-sm text-blue-200">{member.role}</p>
-                      <p className="mt-2 text-sm text-gray-300">{member.note}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-gray-200">
-                <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Contact</p>
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <p className="text-white font-semibold">Email</p>
-                    <a className="text-blue-200 hover:text-white" href="mailto:info@syncre.xyz">
-                      info@syncre.xyz
-                    </a>
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">Account removal</p>
-                    <Link className="text-blue-200 hover:text-white" href="/remove-my-account">
-                      /remove-my-account
-                    </Link>
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">Privacy</p>
-                    <Link className="text-blue-200 hover:text-white" href="/privacy">
-                      /privacy
-                    </Link>
-                  </div>
-                </div>
-                <p className="mt-6 text-gray-400">
-                  Drop us a line if you want to join the beta, found a bug, or want to talk about the backend and
-                  security model.
-                </p>
-              </div>
-            </div>
           </div>
         </section>
 

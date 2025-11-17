@@ -9,7 +9,6 @@ const navLinks = [
   { href: '/', label: 'Overview' },
   { href: '/#features', label: 'Features' },
   { href: '/#app', label: 'App' },
-  { href: '/#team', label: 'Team' },
   // { href: '/chat', label: 'Web chat' },
 ];
 
