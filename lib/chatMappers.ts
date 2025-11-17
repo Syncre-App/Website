@@ -134,11 +134,14 @@ const normalizeTimestamp = (value?: unknown) => {
   if (typeof value === 'string') {
     return value;
   }
-  try {
-    return new Date(value).toISOString();
-  } catch {
-    return null;
+  if (typeof value === 'number' || value instanceof Date) {
+    try {
+      return new Date(value).toISOString();
+    } catch {
+      return null;
+    }
   }
+  return null;
 };
 
 const mapAttachment = (input: unknown): ChatAttachment => {

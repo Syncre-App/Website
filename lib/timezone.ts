@@ -29,7 +29,7 @@ export const TimezoneService = {
     }
     return this.getTimezone();
   },
-  applyHeader<T extends Record<string, string>>(headers: T): T {
+  applyHeader(headers: Record<string, string>): Record<string, string> {
     const zone = this.getTimezone();
     if (zone) {
       headers['X-Client-Timezone'] = zone;
