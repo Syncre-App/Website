@@ -1,385 +1,155 @@
 "use client";
 
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { FiHome, FiInfo, FiUsers, FiLogIn, FiChevronDown, FiLogOut, FiSettings, FiUser, FiMessageSquare, FiBell, FiX, FiCheck } from 'react-icons/fi';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-
-interface Notification {
-  id: string;
-  title: string;
-  userid: string;
-  type?: string;
-  read?: boolean;
-}
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  profile_picture: string;
-  notifications: Notification[];
-}
+import { useState, useEffect, useRef, MouseEvent, useLayoutEffect } from 'react';
 
 const navLinks = [
-  { href: '/', label: 'Home', icon: <FiHome size={18} /> },
-  { href: '/about', label: 'About', icon: <FiInfo size={18} /> },
-  { href: '/team', label: 'Team', icon: <FiUsers size={18} /> },
+  { href: '/', label: 'Overview' },
+  { href: '/#features', label: 'Features' },
+  { href: '/#app', label: 'App' },
+  // { href: '/chat', label: 'Web chat' },
 ];
+
+const sectionLinks = navLinks.filter((link) => link.href.startsWith('/#'));
 
 const Navbar = () => {
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [activePath, setActivePath] = useState(pathname);
-  const [notificationPage, setNotificationPage] = useState(0);
-  
-  useEffect(() => {
-    setActivePath(pathname);
-  }, [pathname]);
+  const [activePath, setActivePath] = useState(pathname || '/');
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const linksContainerRef = useRef<HTMLDivElement>(null);
+  const linkRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [indicator, setIndicator] = useState<{ width: number; left: number } | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const fetchUserData = async () => {
-        try {
-          const res = await fetch('/api/users/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setUser(data.user);
-          } else {
-            localStorage.removeItem('token');
-            setUser(null);
-          }
-        } catch (error) {
-          console.error("Failed to fetch user data", error);
-          setUser(null);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchUserData();
-    } else {
-      setLoading(false);
+  const updateIndicatorPosition = () => {
+    const container = linksContainerRef.current;
+    if (!container) {
+      setIndicator(null);
+      return;
     }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    setIsDropdownOpen(false);
+    const activeEl = linkRefs.current[activePath];
+    if (!activeEl) {
+      setIndicator(null);
+      return;
+    }
+    setIndicator({
+      width: activeEl.offsetWidth,
+      left: activeEl.offsetLeft,
+    });
   };
-  
-  const handleNotificationAction = async (notificationId: string, action: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      
-      const endpoint = `/api/notifications/${notificationId}/${action}`;
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+
+  useLayoutEffect(() => {
+    updateIndicatorPosition();
+    window.addEventListener('resize', updateIndicatorPosition);
+    return () => window.removeEventListener('resize', updateIndicatorPosition);
+  }, [activePath]);
+
+  useEffect(() => {
+    if (isScrolling) return;
+    const handleScroll = () => {
+      const offset = window.scrollY + 140;
+      let current = '/';
+      sectionLinks.forEach((link) => {
+        const id = link.href.split('#')[1];
+        const el = document.getElementById(id);
+        if (el && offset >= el.offsetTop) {
+          current = link.href;
+        }
       });
-      
-      if (response.ok) {
-        if (user) {
-          const res = await fetch('/api/users/me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setUser(data.user);
-          }
-        }
-      } else {
-        console.error('Failed to process notification action');
-      }
-    } catch (error) {
-      console.error('Failed to handle notification action', error);
-    }
-  };
-  
-  const unreadNotificationsCount = user?.notifications?.filter(n => !n.read)?.length || 0;
-  const paginatedNotifications = user?.notifications?.slice(notificationPage * 5, (notificationPage * 5) + 5) || [];
-  const totalPages = Math.ceil((user?.notifications?.length || 0) / 5);
+      setActivePath((prev) => (prev.startsWith('/#') || prev === '/' ? current : prev));
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isScrolling]);
 
-  const renderAuthSection = () => {
-    if (loading) {
-      return (
-        <div className="flex items-center gap-x-2 animate-pulse">
-          <div className="h-10 w-10 rounded-full bg-white/10"></div>
-          <div className="h-4 w-20 rounded bg-white/10"></div>
-        </div>
-      );
+  useEffect(() => {
+    if (isScrolling) return;
+    if (!sectionLinks.some((link) => link.href === pathname)) {
+      setActivePath(pathname || '/');
     }
+  }, [pathname, isScrolling]);
 
-    if (user) {
-      return (
-        <div className="flex items-center gap-x-2">
-          <div 
-            className="relative mr-2"
-            onMouseEnter={() => setIsNotificationOpen(true)}
-            onMouseLeave={() => setIsNotificationOpen(false)}
-          >
-            <button 
-              onClick={() => {
-                setIsNotificationOpen(!isNotificationOpen);
-                setNotificationPage(0);
-              }}
-              className="relative p-2 text-gray-300 hover:text-white transition-colors duration-300"
-              onMouseEnter={() => setActivePath('notifications')}
-            >
-              {activePath === 'notifications' && (
-                <motion.div
-                  layoutId="active-nav-pill"
-                  className="absolute inset-0 bg-blue-600 rounded-full"
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                />
-              )}
-              <FiBell size={20} className="relative z-10" />
-              {unreadNotificationsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full z-20">
-                  {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
-                </span>
-              )}
-            </button>
-            
-            <AnimatePresence>
-              {isNotificationOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-6 w-80 bg-white/5 border border-white/10 rounded-lg shadow-lg z-30"
-                >
-                  <div className="p-3 border-b border-white/10">
-                    <h3 className="text-white font-medium">Notifications</h3>
-                  </div>
-                  
-                  <div className="max-h-[300px] overflow-y-auto">
-                    {paginatedNotifications.length > 0 ? (
-                      paginatedNotifications.map((notification) => (
-                        <div key={notification.id} className="p-3 border-b border-white/5 hover:bg-white/5 transition-colors">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <p className="text-sm text-white">{notification.title}</p>
-                              {notification.userid !== "0" && (
-                                <p className="text-xs text-gray-400 mt-1">From user #{notification.userid}</p>
-                              )}
-                            </div>
-                            <div className="flex gap-x-2">
-                              {notification.type === 'friend_request' ? (
-                                <>
-                                  <button 
-                                    onClick={() => handleNotificationAction(notification.id, 'accept')} 
-                                    className="p-1.5 bg-green-600/20 hover:bg-green-600/40 text-green-500 rounded-full transition-colors"
-                                  >
-                                    <FiCheck size={14} />
-                                  </button>
-                                  <button 
-                                    onClick={() => handleNotificationAction(notification.id, 'reject')}
-                                    className="p-1.5 bg-red-600/20 hover:bg-red-600/40 text-red-500 rounded-full transition-colors"
-                                  >
-                                    <FiX size={14} />
-                                  </button>
-                                </>
-                              ) : (
-                                <button 
-                                  onClick={() => handleNotificationAction(notification.id, 'dismiss')}
-                                  className="p-1.5 bg-gray-600/20 hover:bg-gray-600/40 text-gray-400 rounded-full transition-colors"
-                                >
-                                  <FiX size={14} />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-4 text-center text-gray-400 text-sm">
-                        No notifications
-                      </div>
-                    )}
-                  </div>
-                  
-                  {totalPages > 1 && (
-                    <div className="p-2 border-t border-white/10 flex justify-between items-center">
-                      <button 
-                        onClick={() => setNotificationPage(Math.max(0, notificationPage - 1))}
-                        disabled={notificationPage === 0}
-                        className={`px-3 py-1 rounded text-sm ${notificationPage === 0 ? 'text-gray-500' : 'text-white hover:bg-white/10'}`}
-                      >
-                        Prev
-                      </button>
-                      <span className="text-xs text-gray-400">
-                        Page {notificationPage + 1} of {totalPages}
-                      </span>
-                      <button 
-                        onClick={() => setNotificationPage(Math.min(totalPages - 1, notificationPage + 1))}
-                        disabled={notificationPage === totalPages - 1}
-                        className={`px-3 py-1 rounded text-sm ${notificationPage === totalPages - 1 ? 'text-gray-500' : 'text-white hover:bg-white/10'}`}
-                      >
-                        Next
-                      </button>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          
-          <div
-            className="relative"
-            onMouseEnter={() => {
-              setActivePath('profile');
-              setIsDropdownOpen(true);
-            }}
-            onMouseLeave={() => setIsDropdownOpen(false)}
-          >
-            <div className="relative flex items-center gap-x-3 p-1.5 rounded-full transition-colors duration-300 cursor-pointer">
-              {activePath === 'profile' && (
-                <motion.div
-                  layoutId="active-nav-pill"
-                  className="absolute inset-0 bg-blue-600 rounded-full"
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                />
-              )}
-              <Image
-                src={user.profile_picture}
-                alt={user.username}
-                width={40}
-                height={40}
-                className="rounded-full relative z-10"
-              />
-              <span className="text-white font-medium text-base hidden sm:block relative z-10">{user.username}</span>
-              <FiChevronDown size={20} className={`text-gray-300 transition-transform duration-300 relative z-10 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-            </div>
-            <AnimatePresence>
-              {isDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="absolute top-full right-0 mt-4 w-48 bg-white/5 border border-white/10 rounded-lg shadow-lg z-20"
-                >
-                  <ul className="py-1">
-                    <li>
-                      <Link
-                        href="/settings"
-                        className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
-                      >
-                        <FiSettings />
-                        <span>Settings</span>
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/profile"
-                        className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-300"
-                      >
-                        <FiUser />
-                        <span>Profile</span>
-                      </Link>
-                    </li>
-                    <li>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-x-3 px-4 py-2 text-sm text-red-400 hover:bg-white/5"
-                      >
-                        <FiLogOut />
-                        <span>Logout</span>
-                      </button>
-                    </li>
-                  </ul>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <Link
-        href="/login"
-        onMouseEnter={() => setActivePath('/login')}
-        className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === '/login' ? 'text-white' : 'text-gray-300 hover:text-white'
-          }`}
-      >
-        {activePath === '/login' && (
-          <motion.div
-            layoutId="active-nav-pill"
-            className="absolute inset-0 bg-blue-600 rounded-full"
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          />
-        )}
-        <span className="relative z-10"><FiLogIn size={18} /></span>
-        <span className="relative z-10">Login</span>
-      </Link>
-    );
+  const handleSectionClick = (e: MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const id = href.split('#')[1];
+    const el = document.getElementById(id);
+    if (!el) return;
+    setIsScrolling(true);
+    setActivePath(href);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 700);
   };
 
-  const renderChatButton = () => {
-    if (!user) return null;
-    
-    return (
-      <Link
-        href="/contacts"
-        className="relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 text-white"
-      >
-        <motion.div
-          className="absolute inset-0 bg-blue-600 rounded-full"
-          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        />
-        <span className="relative z-10"><FiMessageSquare size={18} /></span>
-        <span className="relative z-10">Chats</span>
-      </Link>
-    );
+  const handleHomeClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsScrolling(true);
+    setActivePath('/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 700);
   };
 
   return (
-    <div className="fixed top-[30px] w-full flex justify-center z-50 px-4">
-      <div className="w-full max-w-[1200px] flex items-center gap-x-8">
-        <nav
-          className="flex-1 max-w-[calc(100%-140px)] h-[75px] flex items-center justify-between rounded-full bg-white/5 backdrop-blur-lg px-6"
-          onMouseLeave={() => setActivePath(pathname)}
+    <div className="fixed top-6 w-full flex justify-center z-50 px-4">
+      <nav className="relative w-full max-w-[1100px] min-h-[72px] flex items-center rounded-full bg-white/5 backdrop-blur-2xl px-6 border border-white/10 shadow-[0_10px_60px_rgba(15,15,20,0.45)]">
+        <div className="text-lg font-semibold tracking-tight text-white">Syncre</div>
+        <div
+          ref={linksContainerRef}
+          className="absolute left-1/2 -translate-x-1/2 flex items-center gap-x-1 flex-wrap justify-center"
         >
-          <div className="flex items-center gap-x-2">
-            {navLinks.map((link) => (
-              <Link
+          {indicator && (
+            <motion.div
+              className="absolute top-1/2 -translate-y-1/2 h-10 rounded-full bg-white/15 pointer-events-none"
+              initial={false}
+              animate={{ left: indicator.left, width: indicator.width }}
+              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+            />
+          )}
+          {navLinks.map((link) => {
+            const isSectionLink = link.href.startsWith('/#');
+            const isHome = link.href === '/';
+            const isActive = activePath === link.href;
+            return (
+              <div
                 key={link.href}
-                href={link.href}
-                onMouseEnter={() => setActivePath(link.href)}
-                className={`relative flex items-center gap-x-2 py-2 px-4 rounded-full text-base font-medium transition-colors duration-300 ${activePath === link.href ? 'text-white' : 'text-gray-300 hover:text-white'
-                  }`}
+                ref={(el) => {
+                  if (el) {
+                    linkRefs.current[link.href] = el;
+                  } else {
+                    delete linkRefs.current[link.href];
+                  }
+                }}
+                className="relative"
               >
-                {activePath === link.href && (
-                  <motion.div
-                    layoutId="active-nav-pill"
-                    className="absolute inset-0 bg-blue-600 rounded-full"
-                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  />
-                )}
-                <span className="relative z-10">{link.icon}</span>
-                <span className={`relative z-10 ${activePath === link.href ? 'inline' : 'hidden'} md:inline`}>{link.label}</span>
-              </Link>
-            ))}
-          </div>
-          {renderAuthSection()}
-        </nav>
-        <div className="flex-shrink-0">
-          {renderChatButton()}
+                <Link
+                  href={link.href}
+                  scroll={false}
+                  onClick={
+                    isSectionLink
+                      ? (e) => handleSectionClick(e, link.href)
+                      : isHome
+                      ? handleHomeClick
+                      : undefined
+                  }
+                  className={`block px-4 py-2 text-sm font-medium rounded-full transition-colors relative z-10 ${
+                    isActive ? 'text-white' : 'text-gray-300 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              </div>
+            );
+          })}
         </div>
-      </div>
+      </nav>
     </div>
   );
 };
