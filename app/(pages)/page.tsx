@@ -26,7 +26,7 @@ const heroHighlights = [
     detail: 'Chats, calls, and media stay private.',
   },
   { label: 'Platforms', value: 'iOS · Android · Web', detail: 'Built with React Native, Expo, and Next.js.' },
-  { label: 'Team', value: 'Syncre Collective', detail: 'Indie builders in Budapest and Berlin.' },
+  { label: 'Team', value: 'Syncre Collective', detail: 'Created by a small group of student developers from Hungary.' },
 ];
 
 const featureCards = [
