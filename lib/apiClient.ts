@@ -59,8 +59,8 @@ const request = async <T>(
 
     const parsed = await parseResponse(response);
     const errorMessage =
-      parsed.data?.message ||
-      parsed.data?.error ||
+      (parsed.data as any)?.message ||
+      (parsed.data as any)?.error ||
       (!parsed.ok ? `Request failed with status ${parsed.status}` : undefined);
 
     return {

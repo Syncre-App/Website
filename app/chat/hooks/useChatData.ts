@@ -334,16 +334,16 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
         payload.status === 'seen' && payload.viewerId
           ? mergeSeenReceipts(current.seenBy, {
               userId: payload.viewerId.toString(),
-              username: payload.viewerUsername,
-              avatarUrl: payload.viewerAvatar,
-              seenAt: payload.seenAt,
+              username: payload.viewerUsername as string,
+              avatarUrl: payload.viewerAvatar as string,
+              seenAt: payload.seenAt as string,
             })
           : current.seenBy;
       next[index] = {
         ...current,
         status,
-        deliveredAt: payload.deliveredAt ?? current.deliveredAt,
-        seenAt: payload.seenAt ?? current.seenAt,
+        deliveredAt: (payload.deliveredAt ?? current.deliveredAt) as string,
+        seenAt: (payload.seenAt ?? current.seenAt) as string,
         seenBy,
       };
       return { ...prev, [chatId]: next };
@@ -412,20 +412,23 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
         }
         case 'user_status_update': {
           const userId = payload.userId?.toString?.();
-          if (userId && payload.data?.status) {
-            applyStatusUpdates({ [userId]: normalizeStatus(payload.data.status) });
+          const data = payload.data as { status?: string };
+          if (userId && data?.status) {
+            applyStatusUpdates({ [userId]: normalizeStatus(data.status) });
           }
           break;
         }
-        case 'bulk_status_update':
-          if (payload.data?.statuses) {
+        case 'bulk_status_update': {
+          const data = payload.data as { statuses?: Record<string, unknown> };
+          if (data?.statuses) {
             const updates: Record<string, PresenceStatus> = {};
-            Object.entries(payload.data.statuses).forEach(([id, status]) => {
+            Object.entries(data.statuses).forEach(([id, status]) => {
               updates[id] = normalizeStatus(status as string);
             });
             applyStatusUpdates(updates);
           }
           break;
+        }
         case 'chat_group_created':
         case 'chat_updated':
         case 'chat_members_added':
