@@ -255,11 +255,10 @@ export default function Home() {
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.6 }}
           >
-            <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Early access</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Join the private beta</h2>
+            <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Beta builds</p>
+            <h2 className="mt-4 text-3xl font-semibold text-white">Download the Syncre beta today</h2>
             <p className="mt-4 text-gray-200">
-              Tell us about your team, the platforms you use, and what you expect from a private messenger. We respond to
-              every request.
+              The mobile beta is live on GitHub (Android) and TestFlight (iOS). Grab the latest build below—no waitlist.
             </p>
             <div className="mt-8 grid gap-4 text-left md:grid-cols-3">
               <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
@@ -302,20 +301,12 @@ export default function Home() {
                 <p className="mt-4 text-xs text-gray-500">Sign up so we can ping you when it ships.</p>
               </div>
             </div>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <a
-                href="mailto:info@syncre.xyz?subject=Syncre%20Early%20Access&body=Hi%20Syncre%20team,%0D%0A%0D%0AWe%27d%20love%20to%20join%20the%20beta.%20Here%27s%20our%20use%20case..."
-                className="rounded-full bg-black px-8 py-3 text-sm font-semibold text-white shadow-2xl shadow-black/40 ring-1 ring-white/20 transition hover:-translate-y-0.5"
-              >
-                Email info@syncre.xyz
-              </a>
-              <Link
-                href="/remove-my-account"
-                className="rounded-full border border-white/20 px-8 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/5"
-              >
-                Need to delete your data?
-              </Link>
-            </div>
+            <Link
+              href="/remove-my-account"
+              className="mt-8 inline-flex rounded-full border border-white/20 px-8 py-3 text-sm font-semibold text-white transition hover:border-white hover:bg-white/5"
+            >
+              Need to delete your data?
+            </Link>
           </motion.div>
         </section>
         <Footer />
