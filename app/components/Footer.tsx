@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FaGithub } from 'react-icons/fa';
 
 const Footer = () => {
   return (
@@ -12,6 +13,9 @@ const Footer = () => {
           <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
           <Link href="/remove-my-account" className="hover:text-white transition-colors">Remove my account</Link>
           <a href="mailto:info@syncre.xyz" className="hover:text-white transition-colors">info@syncre.xyz</a>
+          <a href="https://github.com/Syncre-App" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <FaGithub className="text-xl" />
+          </a>
         </div>
       </div>
       <div className="border-t border-white/5 py-6 text-center text-xs text-gray-500">
