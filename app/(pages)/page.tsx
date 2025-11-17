@@ -334,12 +334,17 @@ export default function Home() {
                   <span className="font-semibold text-gray-900">Download on TestFlight</span>
                 </a>
               </div>
-              <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
-                <p className="text-sm font-semibold text-white">Web coming soon</p>
-                <p className="mt-2 text-sm text-gray-300">
-                  We&apos;re polishing the web client and will share early builds once it&apos;s ready for testers.
-                </p>
-                <p className="mt-4 text-xs text-gray-500">Sign up so we can ping you when it ships.</p>
+              <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 p-5">
+                <div className="pointer-events-none text-center opacity-40 blur-sm">
+                  <p className="text-sm font-semibold text-white">Web beta</p>
+                  <p className="mt-2 text-sm text-gray-300">
+                    We&apos;re polishing the web client and will share early builds once it&apos;s ready for testers.
+                  </p>
+                  <p className="mt-4 text-xs text-gray-500">Sign up so we can ping you when it ships.</p>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-lg font-semibold uppercase tracking-wide text-white backdrop-blur">
+                  Coming soon…
+                </div>
               </div>
             </div>
           </motion.div>
