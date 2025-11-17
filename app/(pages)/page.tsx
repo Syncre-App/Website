@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Plus_Jakarta_Sans, Space_Grotesk } from 'next/font/google';
@@ -139,7 +138,7 @@ export default function Home() {
           >
             Syncre is a secure, cross-platform communication app built inside our Mobile workspace with React Native and
             Expo. The familiar gradient, softened glass, and blue accents mirror the very first Syncre mockups while the
-            experience scales beautifully across iOS, Android, and web.
+            experience scales beautifully across iOS and Android.
           </motion.p>
           <motion.div
             className="mt-10 flex flex-wrap items-center justify-center gap-4"
@@ -214,7 +213,7 @@ export default function Home() {
             <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">What&apos;s inside?</p>
             <h2 className="mt-3 text-3xl font-semibold text-white">What Syncre delivers.</h2>
             <p className="mt-4 text-gray-200">
-              One calm app for chat, media, presence, and calls—no matter if you open it on iOS, Android, or the web.
+              One calm app for chat, media, presence, and calls—no matter if you open it on iOS or Android.
             </p>
             <ul className="mt-8 space-y-4 text-sm text-gray-200">
               {useCases.map((item) => (
