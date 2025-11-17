@@ -23,7 +23,7 @@ const heroHighlights = [
   {
     label: 'Encryption',
     value: 'End-to-end by default',
-    detail: 'Chats, calls, and media stay private.',
+    detail: 'Chats, calls, to stay private.',
   },
   { label: 'Platforms', value: 'iOS · Android · Web', detail: 'Built with React Native, Expo, and Next.js.' },
   { label: 'Team', value: 'Syncre Collective', detail: 'Created by a small group of student developers from Hungary.' },
