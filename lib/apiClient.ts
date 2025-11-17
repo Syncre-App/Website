@@ -6,6 +6,11 @@ const normalizeBase = (url: string) => url.replace(/\/+$/, '');
 
 export const API_BASE_URL = normalizeBase(process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_BASE);
 
+interface ErrorResponse {
+  message?: string;
+  error?: string;
+}
+
 const buildHeaders = (token?: string, extra?: Record<string, string>) => {
   const headers: Record<string, string> = extra ? { ...extra } : {};
   TimezoneService.applyHeader(headers);
@@ -58,9 +63,10 @@ const request = async <T>(
     });
 
     const parsed = await parseResponse(response);
+    const errorData = parsed.data as ErrorResponse | null;
     const errorMessage =
-      (parsed.data as any)?.message ||
-      (parsed.data as any)?.error ||
+      errorData?.message ||
+      errorData?.error ||
       (!parsed.ok ? `Request failed with status ${parsed.status}` : undefined);
 
     return {
