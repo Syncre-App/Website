@@ -64,7 +64,6 @@ const Navbar = () => {
     const id = href.split('#')[1];
     const el = document.getElementById(id);
     if (!el) return;
-    // push the hash into the URL so location.hash reflects the clicked section immediately
     try {
       window.history.pushState(null, '', href);
     } catch {}
@@ -79,7 +78,6 @@ const Navbar = () => {
 
   const handleHomeClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    // remove any hash from the URL (go back to plain '/')
     try {
       window.history.pushState(null, '', '/');
     } catch {}
@@ -131,7 +129,6 @@ const Navbar = () => {
             ? handleHomeClick
             : isChatLink
             ? async (e: MouseEvent<HTMLAnchorElement>) => {
-                // prevent default navigation so we can smoothly scroll-to-top first
                 e.preventDefault();
                 try {
                   sessionStorage.setItem('chat-fade', '1');
@@ -139,7 +136,7 @@ const Navbar = () => {
                 } catch {}
                 setIsScrolling(true);
                 setActivePath('/chat');
-                // smooth but fast scroll to top, then navigate
+
                 await scrollToTopSmoothFast();
                 if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
                 scrollTimeout.current = setTimeout(() => {

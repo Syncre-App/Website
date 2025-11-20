@@ -18,13 +18,10 @@ const ChatExperience = () => {
     currentUsername: user?.username,
   });
 
-  // skeleton state: show skeleton only if user clicked from navbar (flagged)
   const [skeletonVisible, setSkeletonVisible] = useState(false);
-  // optional dark overlay fade (if you want both effects)
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayOpacity, setOverlayOpacity] = useState(1);
 
-  // on mount, check flags set by Navbar
   useEffect(() => {
     try {
       if (sessionStorage.getItem('chat-skeleton') === '1') {
@@ -35,18 +32,16 @@ const ChatExperience = () => {
         sessionStorage.removeItem('chat-fade');
         setOverlayVisible(true);
         requestAnimationFrame(() => setTimeout(() => setOverlayOpacity(0), 30));
-        const t = setTimeout(() => setOverlayVisible(false), 950); // matches fade timing
+        const t = setTimeout(() => setOverlayVisible(false), 950);
         return () => clearTimeout(t);
       }
     } catch {}
   }, []);
 
-  // hide skeleton when chat data has finished loading
   useEffect(() => {
     if (!skeletonVisible) return;
     const loading = !!(chatState.chatsLoading || chatState.activeMeta?.loading);
     if (!loading) {
-      // small delay so UI doesn't jump immediately
       const t = setTimeout(() => setSkeletonVisible(false), 200);
       return () => clearTimeout(t);
     }
@@ -59,7 +54,6 @@ const ChatExperience = () => {
     };
   }, []);
 
-  // New: hide Overview subsections while on chat page
   useEffect(() => {
     const textTargets = new Set(['features', 'app', 'team']);
     const attrSelectors = [
@@ -72,24 +66,20 @@ const ChatExperience = () => {
 
     const changed = new Map<HTMLElement, string | null>();
 
-    // helper to hide and remember original display
     const hideEl = (el: HTMLElement) => {
       if (!changed.has(el)) changed.set(el, el.style.display || null);
       el.style.display = 'none';
     };
 
-    // hide by attribute/class selectors
     attrSelectors.forEach((sel) => {
       document.querySelectorAll<HTMLElement>(sel).forEach(hideEl);
     });
 
-    // hide by visible text inside nav
     document.querySelectorAll<HTMLElement>('nav a, nav button, nav [role="link"], nav li').forEach((el) => {
       const text = (el.textContent || '').trim().toLowerCase();
       if (textTargets.has(text)) hideEl(el);
     });
 
-    // cleanup: restore original display
     return () => {
       changed.forEach((orig, el) => {
         if (orig === null) el.style.removeProperty('display');
@@ -102,7 +92,7 @@ const ChatExperience = () => {
   if (loading) {
     return (
       <section className="flex min-h-[70vh] items-center justify-center text-white/70">
-        <p>Bejelentkezés ellenőrzése...</p>
+       
       </section>
     );
   }
@@ -209,7 +199,6 @@ export default function ChatPage() {
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
-      // find nearest anchor/button that was clicked
       const link = target.closest('a, button, [role="link"], [data-nav]') as HTMLElement | null;
       if (!link) return;
 
