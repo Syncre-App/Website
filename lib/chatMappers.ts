@@ -78,8 +78,8 @@ const mapUser = (input: unknown): UserProfile => {
         ? raw.name
         : 'User',
     email: typeof raw.email === 'string' ? raw.email : undefined,
-    profile_picture: avatar,
-    profilePicture: avatar,
+    profile_picture: toAbsoluteUrl(avatar),
+    profilePicture: toAbsoluteUrl(avatar),
     status: typeof raw.status === 'string' ? (raw.status as PresenceStatus) : null,
   };
 };
@@ -124,7 +124,7 @@ export const mapChatSummary = (input: unknown): ChatSummary => {
     ownerId: toValueString(raw.ownerId ?? raw.owner_id) || null,
     name: typeof raw.name === 'string' ? raw.name : null,
     displayName: typeof raw.displayName === 'string' ? raw.displayName : null,
-    avatarUrl: avatar,
+    avatarUrl: toAbsoluteUrl(avatar),
     createdAt,
     updatedAt,
   };

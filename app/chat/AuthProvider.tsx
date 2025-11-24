@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { authApi } from '@/lib/auth';
 import type { UserProfile } from '@/lib/types';
 import { e2ee } from '@/lib/e2ee';
+import { API_BASE_URL } from '@/lib/apiClient';
 
 interface AuthContextValue {
   user: UserProfile | null;
@@ -17,10 +18,14 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const useProfileLoader = (
-  setUser: (user: UserProfile | null) => void,
-  logout: () => void
-) =>
+const resolveAvatar = (avatar?: string | null) => {
+  if (!avatar) return null;
+  if (/^https?:\/\//i.test(avatar)) return avatar;
+  const normalized = avatar.startsWith('/') ? avatar : `/${avatar}`;
+  return `${API_BASE_URL.replace(/\/v1\/?$/i, '')}${normalized}`;
+};
+
+const useProfileLoader = (setUser: (user: UserProfile | null) => void, logout: () => void) =>
   useCallback(
     async (token: string | null) => {
       if (!token) {
@@ -29,7 +34,12 @@ const useProfileLoader = (
       }
       const response = await authApi.fetchProfile(token);
       if (response.success && response.data) {
-        setUser(response.data);
+        const profile = response.data;
+        setUser({
+          ...profile,
+          profile_picture: resolveAvatar(profile.profile_picture || profile.profilePicture),
+          profilePicture: resolveAvatar(profile.profile_picture || profile.profilePicture),
+        });
       } else if (response.statusCode === 401) {
         logout();
       }

@@ -26,8 +26,8 @@ const formatTime = (value?: string | null) => {
 const renderAttachment = (attachment: ChatAttachment) => {
   const href = attachment.publicDownloadUrl || attachment.downloadUrl || attachment.publicViewUrl;
   if (!href) return null;
-  if (attachment.isImage && (attachment.previewUrl || attachment.publicViewUrl || attachment.downloadUrl)) {
-    const src = attachment.previewUrl || attachment.publicViewUrl || attachment.downloadUrl;
+  const mediaSrc = attachment.previewUrl || attachment.publicViewUrl || attachment.downloadUrl;
+  if (attachment.isImage && mediaSrc) {
     return (
       <a
         key={attachment.id}
@@ -37,11 +37,18 @@ const renderAttachment = (attachment: ChatAttachment) => {
         className="block overflow-hidden rounded-2xl border border-white/10 bg-black/20"
       >
         <img
-          src={src ?? ''}
+          src={mediaSrc}
           alt={attachment.name}
           className="max-h-72 w-full object-cover transition hover:scale-[1.01]"
         />
       </a>
+    );
+  }
+  if (attachment.isVideo && mediaSrc) {
+    return (
+      <div key={attachment.id} className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
+        <video src={mediaSrc} controls className="max-h-72 w-full rounded-2xl" />
+      </div>
     );
   }
   return (
