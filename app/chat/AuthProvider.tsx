@@ -11,7 +11,7 @@ interface AuthContextValue {
   token: string | null;
   loading: boolean;
   authError: string | null;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string, pin: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
 }
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [loadProfile, token]);
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string, pin: string) => {
       setAuthError(null);
       const response = await authApi.login(email, password);
       if (!response.success || !response.data) {
@@ -90,6 +90,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(nextToken);
       setUser(response.data.user);
       await loadProfile(nextToken);
+
+      if (pin?.trim()) {
+        const unlock = await e2ee.unlockIdentity(pin.trim(), nextToken, { rememberPin: true });
+        if (!unlock.success && unlock.error) {
+          setAuthError(unlock.error);
+          return { success: false, error: unlock.error };
+        }
+      } else {
+        setAuthError('A PIN megadása kötelező a belépéshez.');
+        return { success: false, error: 'PIN szükséges' };
+      }
+
       return { success: true };
     },
     [loadProfile]
