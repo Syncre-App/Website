@@ -6,6 +6,7 @@ import { LoginPanel } from './components/LoginPanel';
 import { ChatSidebar } from './components/ChatSidebar';
 import { ChatWindow } from './components/ChatWindow';
 import { EncryptionUnlocker } from './components/EncryptionUnlocker';
+import { PinGate } from './components/PinGate';
 import { useChatData } from './hooks/useChatData';
 import { useE2EE } from './hooks/useE2EE';
 import { useEffect, useState } from 'react';
@@ -100,6 +101,19 @@ const ChatExperience = () => {
       <section className="flex min-h-[70vh] items-center justify-center px-6">
         <LoginPanel />
       </section>
+    );
+  }
+
+  if (!encryption.ready) {
+    return (
+      <main className="px-4 pb-14 pt-28 text-white relative min-h-screen">
+        <PinGate
+          unlocking={encryption.unlocking}
+          error={encryption.error}
+          onUnlock={encryption.unlock}
+          onReset={encryption.reset}
+        />
+      </main>
     );
   }
 

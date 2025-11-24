@@ -7,22 +7,20 @@ export const LoginPanel = () => {
   const { login, authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [pin, setPin] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!email || !password || !pin) {
-      setLocalError('Add meg az email címed, a jelszavad és a mobil PIN kódot.');
+    if (!email || !password) {
+      setLocalError('Add meg az email címed és a jelszavad.');
       return;
     }
     setSubmitting(true);
-    const response = await login(email.trim(), password, pin.trim());
+    const response = await login(email.trim(), password);
     if (!response.success) {
       setLocalError(response.error || 'Sikertelen bejelentkezés.');
     } else {
-      setPin('');
       setLocalError(null);
     }
     setSubmitting(false);
@@ -58,18 +56,6 @@ export const LoginPanel = () => {
             placeholder="••••••••"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            disabled={submitting}
-            required
-          />
-        </label>
-        <label className="text-sm font-medium text-gray-200">
-          Mobil PIN (titkosítás feloldásához)
-          <input
-            type="password"
-            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none placeholder:text-gray-400 focus:border-blue-400"
-            placeholder="PIN kód"
-            value={pin}
-            onChange={(event) => setPin(event.target.value)}
             disabled={submitting}
             required
           />
