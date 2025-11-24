@@ -166,10 +166,10 @@ export class SyncreWebSocket {
     });
   }
 
-  joinChat(chatId: string) {
+  joinChat(chatId: string, deviceId?: string) {
     if (!chatId) return;
     this.joinedChats.add(chatId);
-    this.send({ type: 'chat_join', chatId });
+    this.send({ type: 'chat_join', chatId, deviceId });
   }
 
   leaveChat(chatId: string) {
@@ -181,17 +181,32 @@ export class SyncreWebSocket {
   sendChatMessage(
     chatId: string,
     content: string,
-    extras?: { messageType?: string; reply?: Record<string, unknown>; attachments?: string[] }
+    extras?: {
+      messageType?: string;
+      reply?: Record<string, unknown>;
+      attachments?: string[];
+      envelopes?: unknown[];
+      senderDeviceId?: string;
+      preview?: string | null;
+    }
   ) {
-    if (!chatId || !content) return;
-    this.send({
+    if (!chatId) return;
+    const payload: SocketPayload = {
       type: 'chat_message',
       chatId,
-      content,
       message_type: extras?.messageType ?? 'text',
       replyMetadata: extras?.reply,
       attachments: extras?.attachments,
-    });
+    };
+    if (Array.isArray(extras?.envelopes) && extras.envelopes.length) {
+      payload.envelopes = extras.envelopes;
+      payload.senderDeviceId = extras?.senderDeviceId;
+      payload.preview = extras?.preview ?? null;
+    } else {
+      if (!content) return;
+      payload.content = content;
+    }
+    this.send(payload);
   }
 
   sendTyping(chatId: string) {

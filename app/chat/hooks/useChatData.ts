@@ -10,12 +10,15 @@ import type {
   SeenReceipt,
   WebSocketPacket,
 } from '@/lib/types';
+import { e2ee } from '@/lib/e2ee';
 import { webSocketClient } from '@/lib/websocket';
 
 interface UseChatDataOptions {
   token: string | null;
   currentUserId: string | null;
   currentUsername?: string | null;
+  encryptionReady?: boolean;
+  encryptionVersion?: number;
 }
 
 interface MessageMeta {
@@ -56,7 +59,13 @@ const reorderChats = (chats: ChatSummary[], chatId: string, updatedAt: string) =
   return next.sort((a, b) => getTimestamp(b.updatedAt) - getTimestamp(a.updatedAt));
 };
 
-export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDataOptions) => {
+export const useChatData = ({
+  token,
+  currentUserId,
+  currentUsername,
+  encryptionReady = false,
+  encryptionVersion = 0,
+}: UseChatDataOptions) => {
   const [chats, setChats] = useState<ChatSummary[]>([]);
   const [chatsLoading, setChatsLoading] = useState(false);
   const [chatsError, setChatsError] = useState<string | null>(null);
@@ -69,11 +78,13 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
   >({});
   const [userStatuses, setUserStatuses] = useState<Record<string, PresenceStatus>>({});
   const [wsConnected, setWsConnected] = useState(false);
+  const [encryptionError, setEncryptionError] = useState<string | null>(null);
 
   const selectedChatRef = useRef<string | null>(null);
   const messagesRef = useRef<Record<string, ChatMessage[]>>({});
   const pendingQueueRef = useRef<Record<string, string[]>>({});
   const currentUserRef = useRef<string | null>(currentUserId);
+  const decryptingRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     selectedChatRef.current = selectedChatId;
@@ -96,8 +107,58 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
       setUnreadCounts({});
       setUserStatuses({});
       pendingQueueRef.current = {};
+      decryptingRef.current.clear();
+      setEncryptionError(null);
     }
   }, [token]);
+
+  const shouldDecrypt = Boolean(token && currentUserId && encryptionReady);
+
+  useEffect(() => {
+    if (!encryptionReady) {
+      setEncryptionError(null);
+    }
+  }, [encryptionReady]);
+
+  const queueDecrypt = useCallback(
+    (chatId: string, message: ChatMessage) => {
+      if (!shouldDecrypt) return;
+      if (!message.isEncrypted || message.content) return;
+      const envelopes = message.envelopes || [];
+      if (!envelopes.length) return;
+      const key = `${chatId}:${message.id}`;
+      if (decryptingRef.current.has(key)) return;
+      decryptingRef.current.add(key);
+      e2ee
+        .decryptMessage({
+          chatId,
+          envelopes,
+          senderId: message.senderId,
+          currentUserId: currentUserRef.current,
+          token,
+        })
+        .then((result) => {
+          if (result.plaintext) {
+            setMessagesByChat((prev) => {
+              const existing = prev[chatId];
+              if (!existing) return prev;
+              const index = existing.findIndex((msg) => msg.id === message.id);
+              if (index === -1) return prev;
+              const next = [...existing];
+              next[index] = { ...existing[index], content: result.plaintext, preview: null };
+              return { ...prev, [chatId]: next };
+            });
+            setEncryptionError(null);
+          } else if (result.error) {
+            setEncryptionError(result.error);
+          }
+        })
+        .finally(() => {
+          decryptingRef.current.delete(key);
+        });
+    },
+    [shouldDecrypt, token]
+  );
 
   const refreshChats = useCallback(async () => {
     if (!token) return;
@@ -160,9 +221,9 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
         );
 
         if (response.success && response.data) {
+          const nextMessages = response.data.messages;
           setMessagesByChat((prev) => {
             const existing = prev[chatId] ?? [];
-            const nextMessages = response.data!.messages;
             if (options.before) {
               const existingIds = new Set(existing.map((msg) => msg.id));
               const prepended = nextMessages.filter((msg) => !existingIds.has(msg.id));
@@ -181,6 +242,7 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
             );
             return { ...prev, [chatId]: merged };
           });
+          nextMessages.forEach((msg) => queueDecrypt(chatId, msg));
 
           updateMessageMeta(chatId, {
             cursor: response.data.nextCursor ?? null,
@@ -194,7 +256,7 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
         updateMessageMeta(chatId, { loading: false });
       }
     },
-    [token, updateMessageMeta]
+    [token, updateMessageMeta, queueDecrypt]
   );
 
   const loadOlderMessages = useCallback(
@@ -218,11 +280,12 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
     if (!messagesRef.current[activeChatId]?.length) {
       loadMessages(activeChatId);
     }
-    webSocketClient.joinChat(activeChatId);
+    const deviceId = encryptionReady ? e2ee.getDeviceId() : undefined;
+    webSocketClient.joinChat(activeChatId, deviceId);
     return () => {
       webSocketClient.leaveChat(activeChatId);
     };
-  }, [selectedChatId, token, loadMessages]);
+  }, [encryptionReady, loadMessages, selectedChatId, token]);
 
   const markChatAsSeen = useCallback(
     async (chatId: string) => {
@@ -308,8 +371,9 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
           webSocketClient.markMessageSeen(chatId, mapped.id);
         }
       }
+      queueDecrypt(chatId, mapped);
     },
-    [resolvePendingMessage]
+    [queueDecrypt, resolvePendingMessage]
   );
 
   const handleMessageStatus = useCallback((payload: WebSocketPacket) => {
@@ -437,6 +501,11 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
         case 'chat_removed':
           refreshChats();
           break;
+        case 'envelopes_appended':
+          if (payload.chatId) {
+            loadMessages(payload.chatId.toString());
+          }
+          break;
         default:
           break;
       }
@@ -447,6 +516,7 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
       handleMessageStatus,
       handleStopTyping,
       handleTypingEvent,
+      loadMessages,
       refreshChats,
     ]
   );
@@ -487,8 +557,17 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (!shouldDecrypt) {
+      return;
+    }
+    Object.entries(messagesRef.current).forEach(([chatId, list]) => {
+      list.forEach((message) => queueDecrypt(chatId, message));
+    });
+  }, [shouldDecrypt, encryptionVersion, queueDecrypt]);
+
   const sendMessage = useCallback(
-    (content: string, chatId?: string) => {
+    async (content: string, chatId?: string) => {
       const targetChatId = chatId || selectedChatRef.current;
       if (!targetChatId || !content.trim() || !currentUserRef.current) {
         return;
@@ -507,6 +586,18 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
         status: 'sending',
         attachments: [],
       };
+      const selectedChat = chats.find((chat) => chat.id === targetChatId);
+      const participantIds =
+        selectedChat?.participants?.map((participant) => participant.id).filter(Boolean) ?? [];
+      const recipientUserIds = (selectedChat?.users && selectedChat.users.length ? selectedChat.users : participantIds) || [];
+      const shouldEncrypt = encryptionReady && e2ee.hasIdentity() && recipientUserIds.length > 0;
+      if (shouldEncrypt) {
+        message.isEncrypted = true;
+        message.messageType = 'e2ee';
+        message.preview = content.trim().slice(0, 120);
+      } else {
+        message.content = content.trim();
+      }
       registerPendingMessage(targetChatId, pendingId);
       setMessagesByChat((prev) => {
         const existing = prev[targetChatId] ?? [];
@@ -515,10 +606,52 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
           [targetChatId]: [...existing, message],
         };
       });
-      webSocketClient.sendChatMessage(targetChatId, content.trim());
+      if (shouldEncrypt && token) {
+        try {
+          const encryptedPayload = await e2ee.buildEncryptedPayload({
+            chatId: targetChatId,
+            message: content.trim(),
+            recipientUserIds,
+            token,
+            currentUserId: currentUserRef.current,
+          });
+          webSocketClient.sendChatMessage(targetChatId, '', {
+            messageType: 'e2ee',
+            envelopes: encryptedPayload.envelopes,
+            senderDeviceId: encryptedPayload.senderDeviceId,
+            preview: encryptedPayload.preview,
+          });
+        } catch (error) {
+          setEncryptionError('Nem sikerült titkosítani az üzenetet. Ellenőrizd a PIN kódot.');
+          setMessagesByChat((prev) => {
+            const list = prev[targetChatId];
+            if (!list) return prev;
+            const index = list.findIndex((msg) => msg.id === pendingId);
+            if (index === -1) return prev;
+            const next = [...list];
+            next[index] = {
+              ...list[index],
+              isEncrypted: false,
+              messageType: 'text',
+              content: content.trim(),
+              preview: null,
+            };
+            return { ...prev, [targetChatId]: next };
+          });
+          webSocketClient.sendChatMessage(targetChatId, content.trim());
+        }
+      } else {
+        webSocketClient.sendChatMessage(targetChatId, content.trim());
+      }
       setChats((prev) => reorderChats(prev, targetChatId, now));
     },
-    [currentUsername, registerPendingMessage]
+    [
+      chats,
+      currentUsername,
+      encryptionReady,
+      registerPendingMessage,
+      token,
+    ]
   );
 
   const typingUsers = useMemo(() => {
@@ -552,5 +685,6 @@ export const useChatData = ({ token, currentUserId, currentUsername }: UseChatDa
     typingForChat,
     userStatuses,
     wsConnected,
+    encryptionError,
   };
 };

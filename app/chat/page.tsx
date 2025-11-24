@@ -5,17 +5,22 @@ import { AuthProvider, useAuth } from './AuthProvider';
 import { LoginPanel } from './components/LoginPanel';
 import { ChatSidebar } from './components/ChatSidebar';
 import { ChatWindow } from './components/ChatWindow';
+import { EncryptionUnlocker } from './components/EncryptionUnlocker';
 import { useChatData } from './hooks/useChatData';
+import { useE2EE } from './hooks/useE2EE';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const ChatExperience = () => {
   const { user, token, loading } = useAuth();
   const currentUserId = user?.id?.toString() ?? null;
+  const encryption = useE2EE(token ?? null);
   const chatState = useChatData({
     token: token ?? null,
     currentUserId,
     currentUsername: user?.username,
+    encryptionReady: encryption.ready,
+    encryptionVersion: encryption.version,
   });
 
   const [skeletonVisible, setSkeletonVisible] = useState(false);
@@ -46,13 +51,6 @@ const ChatExperience = () => {
       return () => clearTimeout(t);
     }
   }, [skeletonVisible, chatState.chatsLoading, chatState.activeMeta]);
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
 
   useEffect(() => {
     const textTargets = new Set(['features', 'app', 'team']);
@@ -109,7 +107,7 @@ const ChatExperience = () => {
     chatState.chats.find((chat) => chat.id === chatState.selectedChatId) || null;
 
   return (
-    <main className="px-6 pb-20 pt-40 text-white overflow-hidden relative">
+    <main className="px-4 pb-14 pt-28 text-white relative min-h-screen">
       {/* optional dark fade overlay (from navbar click) */}
       {overlayVisible && (
         <div
@@ -126,8 +124,16 @@ const ChatExperience = () => {
         />
       )}
 
+      <EncryptionUnlocker
+        ready={encryption.ready}
+        unlocking={encryption.unlocking}
+        error={chatState.encryptionError || encryption.error}
+        onUnlock={encryption.unlock}
+        onReset={encryption.reset}
+      />
+
       {/* set explicit height to match original visual area and let children use h-full */}
-      <div className="mx-auto flex h-[80vh] max-w-6xl rounded-[32px] border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-3xl relative overflow-hidden">
+      <div className="mx-auto flex min-h-[72vh] h-[calc(100vh-220px)] max-h-[calc(100vh-140px)] max-w-6xl flex-col overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-3xl relative lg:flex-row">
         {/* skeleton frame: shown until chat data finish loading when arriving from navbar */}
         {skeletonVisible ? (
           <>

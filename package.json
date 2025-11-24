@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@stablelib/hkdf": "^2.0.1",
+    "@stablelib/pbkdf2": "^2.0.1",
+    "@stablelib/sha256": "^2.0.1",
+    "@stablelib/xchacha20poly1305": "^2.0.1",
     "@vercel/analytics": "^1.5.0",
     "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
@@ -19,6 +23,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
+    "tweetnacl": "^1.0.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

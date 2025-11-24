@@ -125,7 +125,7 @@ export const ChatSidebar = ({
         </button>
       </div>
       {error && <p className="mb-3 rounded-2xl bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
-      <div className="space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 'calc(90vh - 220px)' }}>
+      <div className="space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 260px)' }}>
         {loading && <p className="text-sm text-white/60">Chat lista betöltése...</p>}
         {!loading && filteredChats.length === 0 && (
           <p className="text-sm text-white/60">Nem található chat.</p>
