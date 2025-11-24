@@ -11,18 +11,18 @@ export const useE2EE = (token: string | null) => {
   const [attemptedAuto, setAttemptedAuto] = useState(false);
 
   useEffect(() => {
+    if (e2ee.hasIdentity()) {
+      setReady(true);
+      setVersion((prev) => (prev === 0 ? 1 : prev));
+      setAttemptedAuto(true);
+      return;
+    }
     if (!token) {
-      e2ee.clearIdentity(true);
       setReady(false);
       setVersion(0);
       setError(null);
       setAttemptedAuto(false);
       return;
-    }
-    if (e2ee.hasIdentity()) {
-      setReady(true);
-      setVersion((prev) => (prev === 0 ? 1 : prev));
-      setAttemptedAuto(true);
     }
   }, [token]);
 
