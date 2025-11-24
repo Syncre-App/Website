@@ -194,14 +194,9 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
             <p className="line-clamp-2 text-white/60">{message.reply.preview || 'Üzenet megnyitása a mobil appban'}</p>
           </div>
         )}
-        {isEncrypted && !canShowSecret && (
-          <div className="flex items-center gap-2 text-xs text-blue-100">
-            <FiLock /> Titkosított üzenet
-          </div>
-        )}
-        {isEncrypted && canShowSecret && (
-          <div className="flex items-center gap-2 text-xs text-blue-100">
-            <FiLock /> Titkosított üzenet
+        {!canShowSecret && isEncrypted && (
+          <div className="flex items-center gap-2 text-xs text-blue-100/80">
+            <FiLock /> Privát üzenet
           </div>
         )}
         {displayContent && (
@@ -216,9 +211,25 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
             ))}
           </div>
         )}
-        <div className="flex items-center justify-end gap-2 text-[11px] text-white/60">
-          {timestamp}
-          {isOwn && <StatusIcon status={message.status} />}
+        <div className="mt-1 flex items-center justify-between text-[11px] text-white/60">
+          <div className="flex items-center gap-2">
+            {isOwn && message.seenBy && message.seenBy.length > 0 && (
+              <div className="flex -space-x-2">
+                {message.seenBy.slice(0, 4).map((viewer) => (
+                  <img
+                    key={viewer.userId}
+                    src={viewer.avatarUrl || undefined}
+                    alt={viewer.username || 'Látta'}
+                    className="h-5 w-5 rounded-full border border-white/20 object-cover"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {timestamp}
+            {isOwn && <StatusIcon status={message.status} />}
+          </div>
         </div>
       </div>
     </div>
