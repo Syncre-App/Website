@@ -166,10 +166,10 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
   return (
     <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[78%] space-y-2 rounded-3xl px-5 py-3 shadow-lg ${
+        className={`max-w-[78%] space-y-2 rounded-3xl px-5 py-3 shadow-[0_12px_36px_rgba(0,0,0,0.35)] ${
           isOwn
-            ? 'rounded-br-md bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
-            : 'rounded-bl-md border border-white/10 bg-white/5 text-white/90'
+            ? 'rounded-br-xl bg-gradient-to-br from-[#3b82f6] via-[#2563eb] to-[#1d4ed8] text-white'
+            : 'rounded-bl-xl bg-[#0f172a]/80 text-white/90 border border-white/5'
         }`}
       >
         {showSender && !isOwn && (

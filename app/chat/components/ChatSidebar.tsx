@@ -67,10 +67,11 @@ const formatPreview = (message?: ChatMessage) => {
   if (message.isDeleted) {
     return 'Üzenet törölve';
   }
-  if (message.isEncrypted && !message.content) {
+  const text = message.content || message.preview;
+  if (!text && message.isEncrypted) {
     return '🔒 Titkosított üzenet';
   }
-  return message.content || '🔒 Titkosított üzenet';
+  return text || '🔒 Titkosított üzenet';
 };
 
 const formatUpdatedAt = (value?: string | null) => {
@@ -112,12 +113,12 @@ export const ChatSidebar = ({
   }, [chats, currentUserId, query]);
 
   return (
-    <aside className="flex h-full w-full max-w-sm flex-col border-r border-white/10 bg-black/20 p-6 relative">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <aside className="flex h-full w-full max-w-[400px] flex-col gap-3 rounded-3xl bg-white/5 p-5 shadow-[0_18px_70px_rgba(0,0,0,0.55)] backdrop-blur-2xl relative">
+      <div className="flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
-          className="flex items-center gap-3 rounded-2xl px-2 py-1 transition hover:bg-white/5"
+          className="flex flex-1 items-center gap-3 rounded-2xl bg-white/5 px-3 py-2 transition hover:bg-white/10"
         >
           {user.profile_picture ? (
             <img
@@ -131,8 +132,8 @@ export const ChatSidebar = ({
             </div>
           )}
           <div className="text-left">
-            <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Fiók</p>
-            <h2 className="text-xl font-semibold text-white">{user.username}</h2>
+            <p className="text-[11px] uppercase tracking-[0.35em] text-blue-200/80">Fiók</p>
+            <h2 className="text-xl font-semibold text-white leading-tight">{user.username}</h2>
             <p className="text-xs text-white/60">{user.email}</p>
           </div>
           <FiChevronDown className={`text-white/70 transition ${menuOpen ? 'rotate-180' : ''}`} />
@@ -145,7 +146,7 @@ export const ChatSidebar = ({
         </button>
       </div>
       {menuOpen && (
-        <div className="absolute left-4 top-20 z-30 w-48 rounded-2xl border border-white/10 bg-black/80 p-2 shadow-lg backdrop-blur-xl">
+        <div className="absolute left-5 top-20 z-30 w-48 rounded-2xl border border-white/10 bg-black/80 p-2 shadow-lg backdrop-blur-xl">
           <button
             type="button"
             onClick={() => logout()}
@@ -155,17 +156,17 @@ export const ChatSidebar = ({
           </button>
         </div>
       )}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="flex items-center gap-2 rounded-2xl bg-white/5 px-3 py-2">
         <input
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Chat keresése..."
-          className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-blue-400"
+          className="flex-1 rounded-xl bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-white/40"
         />
       </div>
       {error && <p className="mb-3 rounded-2xl bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
-      <div className="flex-1 space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 240px)' }}>
+      <div className="flex-1 space-y-2 overflow-y-auto pr-1">
         {loading && <p className="text-sm text-white/60">Chat lista betöltése...</p>}
         {!loading && filteredChats.length === 0 && (
           <p className="text-sm text-white/60">Nem található chat.</p>
@@ -188,10 +189,10 @@ export const ChatSidebar = ({
             <button
               key={chatId}
               onClick={() => onSelectChat(chatId)}
-              className={`flex w-full items-center gap-4 rounded-3xl border px-4 py-3 text-left transition ${
+              className={`flex w-full items-center gap-4 rounded-3xl px-4 py-3 text-left transition ${
                 isSelected
-                  ? 'border-blue-400/60 bg-blue-500/10'
-                  : 'border-white/5 bg-white/0 hover:border-white/20 hover:bg-white/5'
+                  ? 'bg-white/10 ring-1 ring-blue-400/50'
+                  : 'bg-white/5 hover:bg-white/10'
               }`}
             >
               {avatar ? (
