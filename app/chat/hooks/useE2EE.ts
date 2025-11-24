@@ -22,6 +22,7 @@ export const useE2EE = (token: string | null) => {
     if (e2ee.hasIdentity()) {
       setReady(true);
       setVersion((prev) => (prev === 0 ? 1 : prev));
+      setAttemptedAuto(true);
     }
   }, [token]);
 

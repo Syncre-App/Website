@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from './AuthProvider';
 import { LoginPanel } from './components/LoginPanel';
 import { ChatSidebar } from './components/ChatSidebar';
 import { ChatWindow } from './components/ChatWindow';
-import { EncryptionUnlocker } from './components/EncryptionUnlocker';
 import { PinGate } from './components/PinGate';
 import { useChatData } from './hooks/useChatData';
 import { useE2EE } from './hooks/useE2EE';

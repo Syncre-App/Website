@@ -25,12 +25,12 @@ export const PinGate = ({ unlocking, error, onUnlock, onReset }: PinGateProps) =
 
   return (
     <section className="flex min-h-[70vh] items-center justify-center px-6">
-      <div className="max-w-4xl w-full">
-        <div className="mb-6 text-center">
-          <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">PIN szükséges</p>
-          <h1 className="mt-1 text-3xl font-semibold text-white">Oldd fel a titkosított üzeneteket</h1>
-          <p className="mt-2 text-sm text-white/70">
-            A webes chat csak akkor érhető el, ha megadod a mobil appban beállított PIN kódodat.
+      <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-6 rounded-3xl border border-white/10 bg-white/5 p-10 backdrop-blur-2xl shadow-[0_30px_120px_rgba(0,0,0,0.45)]">
+        <div className="space-y-2 text-center">
+          <p className="text-sm uppercase tracking-[0.4em] text-blue-200/80">PIN szükséges</p>
+          <h1 className="text-3xl font-semibold text-white">Oldd fel a titkosított üzeneteket</h1>
+          <p className="text-sm text-gray-300">
+            Add meg a mobil appban beállított PIN kódot. Mentjük, így legközelebb nem kell újra beírnod.
           </p>
         </div>
         <EncryptionUnlocker
