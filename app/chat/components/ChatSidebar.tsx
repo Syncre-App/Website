@@ -29,6 +29,16 @@ const getChatTitle = (chat: ChatSummary, currentUserId: string) => {
   return 'Ismeretlen felhasználó';
 };
 
+const getChatAvatar = (chat: ChatSummary, currentUserId: string) => {
+  if (chat.avatarUrl) return chat.avatarUrl;
+  if (!chat.isGroup) {
+    const others = chat.participants.filter((participant) => participant.id !== currentUserId);
+    const candidate = others[0];
+    return candidate?.profile_picture || candidate?.profilePicture || null;
+  }
+  return null;
+};
+
 const getPresenceLabel = (status?: PresenceStatus) => {
   switch (status) {
     case 'online':
@@ -98,7 +108,7 @@ export const ChatSidebar = ({
   }, [chats, currentUserId, query]);
 
   return (
-    <aside className="w-full max-w-sm border-r border-white/10 bg-black/20 p-6">
+    <aside className="flex h-full w-full max-w-sm flex-col border-r border-white/10 bg-black/20 p-6">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {user.profile_picture ? (
@@ -135,7 +145,7 @@ export const ChatSidebar = ({
         </button>
       </div>
       {error && <p className="mb-3 rounded-2xl bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
-      <div className="space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+      <div className="flex-1 space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 240px)' }}>
         {loading && <p className="text-sm text-white/60">Chat lista betöltése...</p>}
         {!loading && filteredChats.length === 0 && (
           <p className="text-sm text-white/60">Nem található chat.</p>
@@ -147,6 +157,7 @@ export const ChatSidebar = ({
           const typingUsers = typingForChat(chatId);
           const lastMessageList = messagesByChat[chatId] ?? [];
           const lastMessage = lastMessageList[lastMessageList.length - 1];
+          const avatar = getChatAvatar(chat, currentUserId);
           const subtitle = typingUsers.length
             ? `${typingUsers.join(', ')} éppen gépel...`
             : chat.isGroup
@@ -163,9 +174,9 @@ export const ChatSidebar = ({
                   : 'border-white/5 bg-white/0 hover:border-white/20 hover:bg-white/5'
               }`}
             >
-              {chat.avatarUrl ? (
+              {avatar ? (
                 <img
-                  src={chat.avatarUrl}
+                  src={avatar}
                   alt={title}
                   className="h-12 w-12 rounded-2xl object-cover border border-white/10"
                 />
