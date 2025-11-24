@@ -8,13 +8,15 @@ export const useE2EE = (token: string | null) => {
   const [unlocking, setUnlocking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(ready ? 1 : 0);
+  const [attemptedAuto, setAttemptedAuto] = useState(false);
 
   useEffect(() => {
     if (!token) {
-      e2ee.clearIdentity();
+      e2ee.clearIdentity(true);
       setReady(false);
       setVersion(0);
       setError(null);
+      setAttemptedAuto(false);
       return;
     }
     if (e2ee.hasIdentity()) {
@@ -23,6 +25,26 @@ export const useE2EE = (token: string | null) => {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (!token || ready || attemptedAuto) return;
+    const cachedPin = e2ee.getCachedPin();
+    if (!cachedPin) return;
+    setAttemptedAuto(true);
+    setUnlocking(true);
+    e2ee
+      .unlockIdentity(cachedPin, token, { rememberPin: true })
+      .then((result) => {
+        if (result.success) {
+          setReady(true);
+          setError(null);
+          setVersion((prev) => prev + 1);
+        } else if (result.error) {
+          setError(result.error);
+        }
+      })
+      .finally(() => setUnlocking(false));
+  }, [attemptedAuto, ready, token]);
+
   const unlock = useCallback(
     async (pin: string) => {
       if (!token) {
@@ -30,7 +52,7 @@ export const useE2EE = (token: string | null) => {
         return { success: false, error: 'Hiányzó token' };
       }
       setUnlocking(true);
-      const result = await e2ee.unlockIdentity(pin, token);
+      const result = await e2ee.unlockIdentity(pin, token, { rememberPin: true });
       setUnlocking(false);
       if (result.success) {
         setReady(true);

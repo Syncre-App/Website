@@ -595,6 +595,7 @@ export const useChatData = ({
         message.isEncrypted = true;
         message.messageType = 'e2ee';
         message.preview = content.trim().slice(0, 120);
+        message.content = null;
       } else {
         message.content = content.trim();
       }

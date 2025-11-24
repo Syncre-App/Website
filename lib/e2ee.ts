@@ -39,6 +39,7 @@ interface DecryptResult {
 
 const IDENTITY_STORAGE_KEY = 'syncre_e2ee_identity_v1';
 const DEVICE_ID_KEY = 'syncre_web_device_id';
+const PIN_CACHE_KEY = 'syncre_e2ee_pin_v1';
 const KEY_INFO_CONTEXT = 'syncre-chat-v1';
 const HKDF_KEY_LENGTH = 32;
 const DEFAULT_ITERATIONS = 60000;
@@ -160,8 +161,11 @@ const persistIdentity = (bundle: IdentityBundle) => {
   storage.setJSON(IDENTITY_STORAGE_KEY, bundle);
 };
 
-const clearIdentity = () => {
+const clearIdentity = (options?: { includePin?: boolean }) => {
   storage.removeItem(IDENTITY_STORAGE_KEY);
+  if (options?.includePin) {
+    storage.removeItem(PIN_CACHE_KEY);
+  }
 };
 
 const getDeviceId = (): string => {
@@ -270,13 +274,21 @@ export const e2ee = {
     return Boolean(getStoredIdentity());
   },
 
-  clearIdentity() {
-    clearIdentity();
+  clearIdentity(includePin = false) {
+    clearIdentity({ includePin });
   },
 
   getDeviceId,
 
-  async unlockIdentity(pin: string, token: string): Promise<{ success: boolean; error?: string }> {
+  getCachedPin(): string | null {
+    return storage.getItem(PIN_CACHE_KEY);
+  },
+
+  async unlockIdentity(
+    pin: string,
+    token: string,
+    options?: { rememberPin?: boolean }
+  ): Promise<{ success: boolean; error?: string }> {
     if (!pin?.trim()) {
       return { success: false, error: 'Add meg a PIN kódot a titkosítás feloldásához.' };
     }
@@ -301,6 +313,9 @@ export const e2ee = {
         keyVersion: version || 1,
       };
       persistIdentity(bundle);
+      if (options?.rememberPin !== false) {
+        storage.setItem(PIN_CACHE_KEY, pin);
+      }
       await registerDeviceIdentity(bundle, token);
       return { success: true };
     } catch (error) {

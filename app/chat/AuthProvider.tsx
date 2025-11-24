@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { authApi } from '@/lib/auth';
 import type { UserProfile } from '@/lib/types';
+import { e2ee } from '@/lib/e2ee';
 
 interface AuthContextValue {
   user: UserProfile | null;
@@ -46,6 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     authApi.clearToken();
     setUser(null);
     setToken(null);
+    e2ee.clearIdentity(true);
   }, []);
 
   const loadProfile = useProfileLoader(setUser, logout);

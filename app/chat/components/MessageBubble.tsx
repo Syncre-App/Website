@@ -77,8 +77,9 @@ const StatusIcon = ({ status }: { status?: ChatMessage['status'] }) => {
 export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted }: MessageBubbleProps) => {
   const timestamp = formatTime(message.createdAtLocal || message.createdAt);
   const attachments = message.attachments || [];
-  const isEncrypted = message.isEncrypted && !message.content;
-  let displayContent: string | null = message.content;
+  const isEncrypted = Boolean(message.isEncrypted);
+  const canShowSecret = !isEncrypted || canViewEncrypted;
+  let displayContent: string | null = canShowSecret ? message.content : null;
   if (!displayContent && isEncrypted) {
     displayContent = message.preview || 'Titkosított üzenet';
   }
@@ -113,13 +114,18 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted }: 
             {message.senderName && <p className="text-xs font-semibold text-blue-200">{message.senderName}</p>}
           </div>
         )}
-        {message.reply && (!isEncrypted || canViewEncrypted) && (
+        {message.reply && canShowSecret && (
           <div className="rounded-2xl bg-black/10 px-3 py-2 text-xs text-white/70">
             <p className="font-semibold">{message.reply.senderLabel || 'Válasz'}</p>
             <p className="line-clamp-2 text-white/60">{message.reply.preview || 'Üzenet megnyitása a mobil appban'}</p>
           </div>
         )}
-        {isEncrypted && (
+        {isEncrypted && !canShowSecret && (
+          <div className="flex items-center gap-2 text-xs text-blue-100">
+            <FiLock /> Titkosított üzenet
+          </div>
+        )}
+        {isEncrypted && canShowSecret && (
           <div className="flex items-center gap-2 text-xs text-blue-100">
             <FiLock /> Titkosított üzenet
           </div>
