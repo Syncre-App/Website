@@ -8,6 +8,7 @@ interface MessageBubbleProps {
   message: ChatMessage;
   isOwn: boolean;
   showSender: boolean;
+  canViewEncrypted: boolean;
 }
 
 const formatTime = (value?: string | null) => {
@@ -25,6 +26,24 @@ const formatTime = (value?: string | null) => {
 const renderAttachment = (attachment: ChatAttachment) => {
   const href = attachment.publicDownloadUrl || attachment.downloadUrl || attachment.publicViewUrl;
   if (!href) return null;
+  if (attachment.isImage && (attachment.previewUrl || attachment.publicViewUrl || attachment.downloadUrl)) {
+    const src = attachment.previewUrl || attachment.publicViewUrl || attachment.downloadUrl;
+    return (
+      <a
+        key={attachment.id}
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="block overflow-hidden rounded-2xl border border-white/10 bg-black/20"
+      >
+        <img
+          src={src ?? ''}
+          alt={attachment.name}
+          className="max-h-72 w-full object-cover transition hover:scale-[1.01]"
+        />
+      </a>
+    );
+  }
   return (
     <a
       key={attachment.id}
@@ -55,7 +74,7 @@ const StatusIcon = ({ status }: { status?: ChatMessage['status'] }) => {
   return null;
 };
 
-export const MessageBubble = ({ message, isOwn, showSender }: MessageBubbleProps) => {
+export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted }: MessageBubbleProps) => {
   const timestamp = formatTime(message.createdAtLocal || message.createdAt);
   const attachments = message.attachments || [];
   const isEncrypted = message.isEncrypted && !message.content;
@@ -78,10 +97,23 @@ export const MessageBubble = ({ message, isOwn, showSender }: MessageBubbleProps
             : 'rounded-bl-md border border-white/10 bg-white/5 text-white/90'
         }`}
       >
-        {showSender && !isOwn && message.senderName && (
-          <p className="text-xs font-semibold text-blue-200">{message.senderName}</p>
+        {showSender && !isOwn && (
+          <div className="flex items-center gap-2">
+            {message.senderAvatar ? (
+              <img
+                src={message.senderAvatar}
+                alt={message.senderName || 'Feladó'}
+                className="h-6 w-6 rounded-full object-cover border border-white/20"
+              />
+            ) : (
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500/40 text-[11px] font-semibold text-white">
+                {(message.senderName || 'N')[0]}
+              </div>
+            )}
+            {message.senderName && <p className="text-xs font-semibold text-blue-200">{message.senderName}</p>}
+          </div>
         )}
-        {message.reply && (
+        {message.reply && (!isEncrypted || canViewEncrypted) && (
           <div className="rounded-2xl bg-black/10 px-3 py-2 text-xs text-white/70">
             <p className="font-semibold">{message.reply.senderLabel || 'Válasz'}</p>
             <p className="line-clamp-2 text-white/60">{message.reply.preview || 'Üzenet megnyitása a mobil appban'}</p>

@@ -18,6 +18,7 @@ interface ChatWindowProps {
   onSend: (message: string) => void;
   wsConnected: boolean;
   currentUserId: string;
+  canViewEncrypted: boolean;
 }
 
 const describeChat = (chat: ChatSummary | null, currentUserId: string) => {
@@ -39,6 +40,7 @@ export const ChatWindow = ({
   onSend,
   wsConnected,
   currentUserId,
+  canViewEncrypted,
 }: ChatWindowProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -126,6 +128,7 @@ export const ChatWindow = ({
                 message={message}
                 isOwn={isOwn}
                 showSender={showSender}
+                canViewEncrypted={canViewEncrypted}
               />
             );
           })}

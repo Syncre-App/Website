@@ -686,5 +686,6 @@ export const useChatData = ({
     userStatuses,
     wsConnected,
     encryptionError,
+    encryptionReady,
   };
 };

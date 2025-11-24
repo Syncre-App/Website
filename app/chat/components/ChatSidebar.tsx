@@ -99,14 +99,24 @@ export const ChatSidebar = ({
 
   return (
     <aside className="w-full max-w-sm border-r border-white/10 bg-black/20 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Fiók</p>
-          <h2 className="text-xl font-semibold text-white">{user.username}</h2>
-          <p className="text-xs text-white/60">{user.email}</p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-lg font-semibold text-blue-100">
-          {user.username?.[0]?.toUpperCase() ?? 'S'}
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {user.profile_picture ? (
+            <img
+              src={user.profile_picture}
+              alt={user.username}
+              className="h-12 w-12 rounded-full object-cover border border-white/10"
+            />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-lg font-semibold text-blue-100">
+              {user.username?.[0]?.toUpperCase() ?? 'S'}
+            </div>
+          )}
+          <div>
+            <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Fiók</p>
+            <h2 className="text-xl font-semibold text-white">{user.username}</h2>
+            <p className="text-xs text-white/60">{user.email}</p>
+          </div>
         </div>
       </div>
       <div className="mb-4 flex items-center gap-2">
@@ -153,9 +163,17 @@ export const ChatSidebar = ({
                   : 'border-white/5 bg-white/0 hover:border-white/20 hover:bg-white/5'
               }`}
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/40 to-indigo-600/40 text-base font-semibold text-white">
-                {chat.isGroup ? '👥' : title[0]?.toUpperCase()}
-              </div>
+              {chat.avatarUrl ? (
+                <img
+                  src={chat.avatarUrl}
+                  alt={title}
+                  className="h-12 w-12 rounded-2xl object-cover border border-white/10"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/40 to-indigo-600/40 text-base font-semibold text-white">
+                  {chat.isGroup ? '👥' : title[0]?.toUpperCase()}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-white">{title}</p>

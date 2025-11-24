@@ -189,6 +189,7 @@ const ChatExperience = () => {
               onSend={(message) => chatState.sendMessage(message)}
               wsConnected={chatState.wsConnected}
               currentUserId={currentUserId}
+              canViewEncrypted={encryption.ready}
             />
           </>
         )}
@@ -226,7 +227,6 @@ export default function ChatPage() {
 
   return (
     <AuthProvider>
-      <Navbar />
       <ChatExperience />
     </AuthProvider>
   );
