@@ -46,7 +46,7 @@ export const MessageComposer = ({ onSend, disabled, onTyping, onStopTyping }: Me
         }}
         onKeyDown={handleKeyDown}
         placeholder="Írj egy üzenetet..."
-        rows={2}
+        rows={3}
         className="w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-white/50"
       />
       <div className="mt-3 flex justify-end">
