@@ -24,7 +24,7 @@ const formatTime = (value?: string | null) => {
   }
 };
 
-const renderAttachment = (attachment: ChatAttachment) => {
+const renderAttachment = (attachment: ChatAttachment, authToken: string) => {
   const href = attachment.publicDownloadUrl || attachment.downloadUrl || attachment.publicViewUrl;
   if (!href) return null;
   const mediaSrc = attachment.previewUrl || attachment.publicViewUrl || attachment.downloadUrl;

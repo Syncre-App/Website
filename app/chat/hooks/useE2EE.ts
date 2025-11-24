@@ -9,12 +9,14 @@ export const useE2EE = (token: string | null) => {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(ready ? 1 : 0);
   const [attemptedAuto, setAttemptedAuto] = useState(false);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
 
   useEffect(() => {
     if (e2ee.hasIdentity()) {
       setReady(true);
       setVersion((prev) => (prev === 0 ? 1 : prev));
       setAttemptedAuto(true);
+      setDeviceId(e2ee.getDeviceId());
       return;
     }
     if (!token) {
@@ -59,6 +61,7 @@ export const useE2EE = (token: string | null) => {
         setReady(true);
         setError(null);
         setVersion((prev) => prev + 1);
+        setDeviceId(e2ee.getDeviceId());
       } else if (result.error) {
         setError(result.error);
       }
@@ -80,9 +83,10 @@ export const useE2EE = (token: string | null) => {
       unlocking,
       error,
       version,
+      deviceId,
       unlock,
       reset,
     }),
-    [error, ready, reset, unlock, unlocking, version]
+    [deviceId, error, ready, reset, unlock, unlocking, version]
   );
 };

@@ -19,6 +19,7 @@ interface UseChatDataOptions {
   currentUsername?: string | null;
   encryptionReady?: boolean;
   encryptionVersion?: number;
+  encryptionDeviceId?: string | null;
 }
 
 interface MessageMeta {
@@ -65,6 +66,7 @@ export const useChatData = ({
   currentUsername,
   encryptionReady = false,
   encryptionVersion = 0,
+  encryptionDeviceId = null,
 }: UseChatDataOptions) => {
   const [chats, setChats] = useState<ChatSummary[]>([]);
   const [chatsLoading, setChatsLoading] = useState(false);
@@ -210,13 +212,13 @@ export const useChatData = ({
   }, []);
 
   const loadMessages = useCallback(
-    async (chatId: string, options: { before?: string } = {}) => {
+    async (chatId: string, options: { before?: string; deviceId?: string | null } = {}) => {
       if (!token) return;
       updateMessageMeta(chatId, { loading: true });
       try {
         const response = await chatApi.getMessages(
           chatId,
-          options.before ? { before: options.before } : {},
+          options.before ? { before: options.before, deviceId: options.deviceId ?? undefined } : { deviceId: options.deviceId ?? undefined },
           token
         );
 
@@ -278,14 +280,14 @@ export const useChatData = ({
     const activeChatId = selectedChatId;
     if (!token || !activeChatId) return;
     if (!messagesRef.current[activeChatId]?.length) {
-      loadMessages(activeChatId);
+      loadMessages(activeChatId, { deviceId: encryptionDeviceId || undefined });
     }
-    const deviceId = encryptionReady ? e2ee.getDeviceId() : undefined;
+    const deviceId = encryptionReady ? encryptionDeviceId || e2ee.getDeviceId() : undefined;
     webSocketClient.joinChat(activeChatId, deviceId);
     return () => {
       webSocketClient.leaveChat(activeChatId);
     };
-  }, [encryptionReady, loadMessages, selectedChatId, token]);
+  }, [encryptionDeviceId, encryptionReady, loadMessages, selectedChatId, token]);
 
   const markChatAsSeen = useCallback(
     async (chatId: string) => {

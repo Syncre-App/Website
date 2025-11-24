@@ -56,7 +56,7 @@ export const chatApi = {
   },
   async getMessages(
     chatId: string,
-    params: { before?: string; limit?: number } = {},
+    params: { before?: string; limit?: number; deviceId?: string | null } = {},
     token: string
   ): Promise<ApiResponse<MessageResponse>> {
     const search = new URLSearchParams();
@@ -65,6 +65,9 @@ export const chatApi = {
     }
     if (params.limit) {
       search.set('limit', String(params.limit));
+    }
+    if (params.deviceId) {
+      search.set('deviceId', params.deviceId);
     }
     const query = search.toString();
     const response = await apiClient.get<RawMessageResponse>(

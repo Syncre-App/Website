@@ -274,11 +274,11 @@ export const e2ee = {
     return Boolean(getStoredIdentity());
   },
 
+  getDeviceId,
+
   clearIdentity(includePin = false) {
     clearIdentity({ includePin });
   },
-
-  getDeviceId,
 
   getCachedPin(): string | null {
     return storage.getItem(PIN_CACHE_KEY);
