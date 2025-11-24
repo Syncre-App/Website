@@ -120,8 +120,7 @@ const ChatExperience = () => {
     chatState.chats.find((chat) => chat.id === chatState.selectedChatId) || null;
 
   return (
-    <main className="px-4 pb-14 pt-28 text-white relative min-h-screen">
-      {/* optional dark fade overlay (from navbar click) */}
+    <main className="relative min-h-screen bg-gradient-to-br from-[#0b1228] via-[#0a0d1d] to-[#0b162f] px-3 pb-4 pt-14 text-white">
       {overlayVisible && (
         <div
           aria-hidden="true"
@@ -129,7 +128,7 @@ const ChatExperience = () => {
             position: 'absolute',
             inset: 0,
             zIndex: 60,
-            background: 'rgba(0,0,0,0.95)',
+            background: 'rgba(0,0,0,0.6)',
             opacity: overlayOpacity,
             transition: 'opacity 900ms ease',
             pointerEvents: 'none',
@@ -137,66 +136,59 @@ const ChatExperience = () => {
         />
       )}
 
-      {/* set explicit height to match original visual area and let children use h-full */}
-      <div className="mx-auto flex min-h-[72vh] h-[calc(100vh-220px)] max-h-[calc(100vh-140px)] max-w-6xl flex-col overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-3xl relative lg:flex-row">
-        {/* skeleton frame: shown until chat data finish loading when arriving from navbar */}
+      <div className="flex h-[calc(100vh-96px)] w-full gap-4">
         {skeletonVisible ? (
-          <>
-            {/* left: sidebar skeleton — fill full height */}
-            <div className="w-72 p-6 border-r border-white/5 flex flex-col gap-4 h-full">
-              <div className="h-8 w-40 bg-white/10 rounded mb-2 animate-pulse" />
-              <div className="flex-1 overflow-auto space-y-3">
-                <div className="h-12 bg-white/6 rounded animate-pulse" />
-                <div className="h-12 bg-white/6 rounded animate-pulse" />
-                <div className="h-12 bg-white/6 rounded animate-pulse" />
-                <div className="h-12 bg-white/6 rounded animate-pulse" />
-                <div className="h-12 bg-white/6 rounded animate-pulse" />
-                <div className="h-12 bg-white/6 rounded animate-pulse" />
-              </div>
-            </div>
-            {/* right: chat window skeleton — occupy full height and allow messages area to grow */}
-            <div className="flex-1 p-6 flex flex-col h-full">
-              <div className="h-10 w-1/3 bg-white/10 rounded mb-4 animate-pulse" />
-              <div className="flex-1 overflow-auto space-y-3">
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-10 bg-white/6 rounded ${i % 2 ? 'w-2/3' : 'w-1/3'} animate-pulse`}
-                  />
+          <div className="flex w-full gap-4">
+            <div className="w-[400px] rounded-3xl border border-white/10 bg-white/5 p-5">
+              <div className="h-10 w-40 rounded bg-white/10 animate-pulse" />
+              <div className="mt-4 space-y-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-12 rounded-2xl bg-white/6 animate-pulse" />
                 ))}
               </div>
-              <div className="mt-4 h-12 bg-white/8 rounded animate-pulse" />
             </div>
-          </>
+            <div className="flex-1 rounded-3xl border border-white/10 bg-white/5 p-6">
+              <div className="h-10 w-48 rounded bg-white/10 animate-pulse" />
+              <div className="mt-4 space-y-3">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div key={i} className={`h-10 rounded-2xl bg-white/6 animate-pulse ${i % 2 ? 'w-3/4' : 'w-1/2'}`} />
+                ))}
+              </div>
+            </div>
+          </div>
         ) : (
           <>
-            <ChatSidebar
-              user={user}
-              chats={chatState.chats}
-              loading={chatState.chatsLoading}
-              error={chatState.chatsError}
-              selectedChatId={chatState.selectedChatId}
-              onSelectChat={chatState.setSelectedChatId}
-              onRefresh={chatState.refreshChats}
-              unreadCounts={chatState.unreadCounts}
-              userStatuses={chatState.userStatuses}
-              typingForChat={chatState.typingForChat}
-              messagesByChat={chatState.messagesByChat}
-              currentUserId={currentUserId}
-            />
-            <ChatWindow
-              chat={selectedChat}
-              messages={chatState.messages}
-              typingUsers={chatState.typingUsers}
-              hasMore={chatState.activeMeta.hasMore}
-              isLoading={chatState.activeMeta.loading}
-              onLoadOlder={() => chatState.loadOlderMessages()}
-              onSend={(message) => chatState.sendMessage(message)}
-              wsConnected={chatState.wsConnected}
-              currentUserId={currentUserId}
-              canViewEncrypted={encryption.ready}
-              authToken={token}
-            />
+            <div className="flex h-full w-[400px] flex-col overflow-hidden rounded-3xl border border-white/10 bg-black/30 shadow-[0_20px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+              <ChatSidebar
+                user={user}
+                chats={chatState.chats}
+                loading={chatState.chatsLoading}
+                error={chatState.chatsError}
+                selectedChatId={chatState.selectedChatId}
+                onSelectChat={chatState.setSelectedChatId}
+                onRefresh={chatState.refreshChats}
+                unreadCounts={chatState.unreadCounts}
+                userStatuses={chatState.userStatuses}
+                typingForChat={chatState.typingForChat}
+                messagesByChat={chatState.messagesByChat}
+                currentUserId={currentUserId}
+              />
+            </div>
+            <div className="flex h-full flex-1 overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_20px_80px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+              <ChatWindow
+                chat={selectedChat}
+                messages={chatState.messages}
+                typingUsers={chatState.typingUsers}
+                hasMore={chatState.activeMeta.hasMore}
+                isLoading={chatState.activeMeta.loading}
+                onLoadOlder={() => chatState.loadOlderMessages()}
+                onSend={(message) => chatState.sendMessage(message)}
+                wsConnected={chatState.wsConnected}
+                currentUserId={currentUserId}
+                canViewEncrypted={encryption.ready}
+                authToken={token}
+              />
+            </div>
           </>
         )}
       </div>

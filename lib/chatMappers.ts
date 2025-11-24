@@ -278,7 +278,7 @@ export const mapServerMessage = (input: unknown): ChatMessage => {
   const content =
     !isEncrypted && !parsedEnvelopeText
       ? (typeof raw.content === 'string' ? raw.content : '')
-      : null;
+      : parsedEnvelopeText;
 
   const replySource = raw.reply ?? raw.replyMetadata;
   const replyRecord = toRecord(replySource);

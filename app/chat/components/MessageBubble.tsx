@@ -3,6 +3,7 @@
 import type { ChatAttachment, ChatMessage } from '@/lib/types';
 import { FiCheck, FiLock } from 'react-icons/fi';
 import { BsCheck2All } from 'react-icons/bs';
+import { useEffect, useState } from 'react';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -24,44 +25,109 @@ const formatTime = (value?: string | null) => {
   }
 };
 
-const renderAttachment = (attachment: ChatAttachment, authToken: string) => {
+const normalizeContent = (value?: string | null): string | null => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === 'object') {
+        if (typeof parsed.text === 'string' && parsed.text.trim()) {
+          return parsed.text;
+        }
+        if (typeof parsed.preview === 'string' && parsed.preview.trim()) {
+          return parsed.preview;
+        }
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+  return trimmed;
+};
+
+const AttachmentView = ({ attachment, authToken }: { attachment: ChatAttachment; authToken?: string }) => {
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
   const href = attachment.publicDownloadUrl || attachment.downloadUrl || attachment.publicViewUrl;
-  if (!href) return null;
   const mediaSrc = attachment.previewUrl || attachment.publicViewUrl || attachment.downloadUrl;
-  if (attachment.isImage && mediaSrc) {
+
+  useEffect(() => {
+    let active = true;
+    let revokeUrl: string | null = null;
+    setError(null);
+
+    const needsAuth = Boolean(authToken && href && /^https?:\/\//i.test(href));
+    const fetchSrc = mediaSrc || href;
+
+    if (needsAuth && fetchSrc) {
+      fetch(fetchSrc, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          if (!active) return;
+          revokeUrl = URL.createObjectURL(blob);
+          setObjectUrl(revokeUrl);
+        })
+        .catch((err) => {
+          if (active) setError(err.message || 'Letöltési hiba');
+        });
+    } else {
+      setObjectUrl(null);
+    }
+
+    return () => {
+      active = false;
+      if (revokeUrl) URL.revokeObjectURL(revokeUrl);
+    };
+  }, [authToken, href, mediaSrc]);
+
+  const viewHref = objectUrl || href;
+  const viewSrc = objectUrl || mediaSrc;
+
+  if (!viewHref) return null;
+
+  if (attachment.isImage && viewSrc) {
     return (
       <a
         key={attachment.id}
-        href={href}
+        href={viewHref}
         target="_blank"
         rel="noreferrer"
         className="block overflow-hidden rounded-2xl border border-white/10 bg-black/20"
       >
         <img
-          src={mediaSrc}
+          src={viewSrc}
           alt={attachment.name}
           className="max-h-72 w-full object-cover transition hover:scale-[1.01]"
         />
       </a>
     );
   }
-  if (attachment.isVideo && mediaSrc) {
+
+  if (attachment.isVideo && viewSrc) {
     return (
       <div key={attachment.id} className="overflow-hidden rounded-2xl border border-white/10 bg-black/20">
-        <video src={mediaSrc} controls className="max-h-72 w-full rounded-2xl" />
+        <video src={viewSrc} controls className="max-h-72 w-full rounded-2xl" />
       </div>
     );
   }
+
   return (
     <a
       key={attachment.id}
-      href={href}
+      href={viewHref}
       target="_blank"
       rel="noreferrer"
       className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 transition hover:border-blue-400 hover:text-white"
     >
       <span className="text-blue-200">{attachment.isImage ? '🖼️' : attachment.isVideo ? '🎬' : '📎'}</span>
       <span className="truncate">{attachment.name}</span>
+      {error && <span className="text-[10px] text-red-200">({error})</span>}
     </a>
   );
 };
@@ -87,9 +153,9 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
   const attachments = message.attachments || [];
   const isEncrypted = Boolean(message.isEncrypted);
   const canShowSecret = !isEncrypted || canViewEncrypted;
-  let displayContent: string | null = canShowSecret ? message.content : null;
+  let displayContent: string | null = canShowSecret ? normalizeContent(message.content) : null;
   if (!displayContent && isEncrypted) {
-    displayContent = message.preview || 'Titkosított üzenet';
+    displayContent = normalizeContent(message.preview) || 'Titkosított üzenet';
   }
   if (message.isDeleted) {
     displayContent = message.deletedByName
@@ -145,7 +211,9 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
         )}
         {attachments.length > 0 && (
           <div className="flex flex-col gap-2">
-            {attachments.map((attachment) => renderAttachment(attachment, authToken))}
+            {attachments.map((attachment) => (
+              <AttachmentView key={attachment.id} attachment={attachment} authToken={authToken} />
+            ))}
           </div>
         )}
         <div className="flex items-center justify-end gap-2 text-[11px] text-white/60">
