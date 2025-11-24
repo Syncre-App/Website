@@ -168,8 +168,8 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
       <div
         className={`max-w-[78%] space-y-2 rounded-3xl px-5 py-3 shadow-[0_12px_36px_rgba(0,0,0,0.35)] ${
           isOwn
-            ? 'rounded-br-xl bg-gradient-to-br from-[#3b82f6] via-[#2563eb] to-[#1d4ed8] text-white'
-            : 'rounded-bl-xl bg-[#0f172a]/80 text-white/90 border border-white/5'
+            ? 'rounded-br-xl bg-[#162442]/90 text-white border border-blue-400/30'
+            : 'rounded-bl-xl bg-[#0f172a]/85 text-white/90 border border-white/5'
         }`}
       >
         {showSender && !isOwn && (
@@ -215,14 +215,26 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
           <div className="flex items-center gap-2">
             {isOwn && message.seenBy && message.seenBy.length > 0 && (
               <div className="flex -space-x-2">
-                {message.seenBy.slice(0, 4).map((viewer) => (
-                  <img
-                    key={viewer.userId}
-                    src={viewer.avatarUrl || undefined}
-                    alt={viewer.username || 'Látta'}
-                    className="h-5 w-5 rounded-full border border-white/20 object-cover"
-                  />
-                ))}
+                {message.seenBy
+                  .filter((viewer) => viewer.userId !== message.senderId)
+                  .slice(0, 4)
+                  .map((viewer) =>
+                    viewer.avatarUrl ? (
+                      <img
+                        key={viewer.userId}
+                        src={viewer.avatarUrl}
+                        alt={viewer.username || 'Látta'}
+                        className="h-5 w-5 rounded-full border border-white/20 object-cover"
+                      />
+                    ) : (
+                      <span
+                        key={viewer.userId}
+                        className="flex h-5 w-5 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[9px] uppercase"
+                      >
+                        {(viewer.username || 'L')[0]}
+                      </span>
+                    )
+                  )}
               </div>
             )}
           </div>
