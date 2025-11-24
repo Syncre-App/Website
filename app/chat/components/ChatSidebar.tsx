@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import type { ChatMessage, ChatSummary, PresenceStatus, UserProfile } from '@/lib/types';
+import { FiLogOut, FiChevronDown } from 'react-icons/fi';
+import { useAuth } from '../AuthProvider';
 
 interface ChatSidebarProps {
   user: UserProfile;
@@ -98,6 +100,8 @@ export const ChatSidebar = ({
   currentUserId,
 }: ChatSidebarProps) => {
   const [query, setQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { logout } = useAuth();
 
   const filteredChats = useMemo(() => {
     if (!query.trim()) {
@@ -108,9 +112,13 @@ export const ChatSidebar = ({
   }, [chats, currentUserId, query]);
 
   return (
-    <aside className="flex h-full w-full max-w-sm flex-col border-r border-white/10 bg-black/20 p-6">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+    <aside className="flex h-full w-full max-w-sm flex-col border-r border-white/10 bg-black/20 p-6 relative">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          className="flex items-center gap-3 rounded-2xl px-2 py-1 transition hover:bg-white/5"
+        >
           {user.profile_picture ? (
             <img
               src={user.profile_picture}
@@ -122,13 +130,31 @@ export const ChatSidebar = ({
               {user.username?.[0]?.toUpperCase() ?? 'S'}
             </div>
           )}
-          <div>
+          <div className="text-left">
             <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Fiók</p>
             <h2 className="text-xl font-semibold text-white">{user.username}</h2>
             <p className="text-xs text-white/60">{user.email}</p>
           </div>
-        </div>
+          <FiChevronDown className={`text-white/70 transition ${menuOpen ? 'rotate-180' : ''}`} />
+        </button>
+        <button
+          onClick={onRefresh}
+          className="rounded-2xl border border-white/10 px-3 py-2 text-xs text-white/70 transition hover:border-blue-400"
+        >
+          Frissítés
+        </button>
       </div>
+      {menuOpen && (
+        <div className="absolute left-4 top-20 z-30 w-48 rounded-2xl border border-white/10 bg-black/80 p-2 shadow-lg backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-white/80 transition hover:bg-white/10"
+          >
+            <FiLogOut className="text-white/70" /> Kilépés
+          </button>
+        </div>
+      )}
       <div className="mb-4 flex items-center gap-2">
         <input
           type="search"
@@ -137,12 +163,6 @@ export const ChatSidebar = ({
           placeholder="Chat keresése..."
           className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-blue-400"
         />
-        <button
-          onClick={onRefresh}
-          className="rounded-2xl border border-white/10 px-3 py-2 text-xs text-white/70 transition hover:border-blue-400"
-        >
-          Frissítés
-        </button>
       </div>
       {error && <p className="mb-3 rounded-2xl bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
       <div className="flex-1 space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 'calc(100vh - 240px)' }}>

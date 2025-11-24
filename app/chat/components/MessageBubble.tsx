@@ -9,6 +9,7 @@ interface MessageBubbleProps {
   isOwn: boolean;
   showSender: boolean;
   canViewEncrypted: boolean;
+  authToken?: string;
 }
 
 const formatTime = (value?: string | null) => {
@@ -81,7 +82,7 @@ const StatusIcon = ({ status }: { status?: ChatMessage['status'] }) => {
   return null;
 };
 
-export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted }: MessageBubbleProps) => {
+export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, authToken }: MessageBubbleProps) => {
   const timestamp = formatTime(message.createdAtLocal || message.createdAt);
   const attachments = message.attachments || [];
   const isEncrypted = Boolean(message.isEncrypted);
@@ -144,7 +145,7 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted }: 
         )}
         {attachments.length > 0 && (
           <div className="flex flex-col gap-2">
-            {attachments.map((attachment) => renderAttachment(attachment))}
+            {attachments.map((attachment) => renderAttachment(attachment, authToken))}
           </div>
         )}
         <div className="flex items-center justify-end gap-2 text-[11px] text-white/60">

@@ -19,6 +19,7 @@ interface ChatWindowProps {
   wsConnected: boolean;
   currentUserId: string;
   canViewEncrypted: boolean;
+  authToken?: string | null;
 }
 
 const describeChat = (chat: ChatSummary | null, currentUserId: string) => {
@@ -41,6 +42,7 @@ export const ChatWindow = ({
   wsConnected,
   currentUserId,
   canViewEncrypted,
+  authToken,
 }: ChatWindowProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -129,6 +131,7 @@ export const ChatWindow = ({
                 isOwn={isOwn}
                 showSender={showSender}
                 canViewEncrypted={canViewEncrypted}
+                authToken={authToken || undefined}
               />
             );
           })}

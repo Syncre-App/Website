@@ -195,6 +195,7 @@ const ChatExperience = () => {
               wsConnected={chatState.wsConnected}
               currentUserId={currentUserId}
               canViewEncrypted={encryption.ready}
+              authToken={token}
             />
           </>
         )}

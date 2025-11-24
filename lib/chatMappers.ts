@@ -257,6 +257,17 @@ export const mapServerMessage = (input: unknown): ChatMessage => {
   const hasEnvelopes =
     Array.isArray(raw.envelopes) ||
     Boolean((typeof raw.envelope === 'string' && raw.envelope.includes('recipientId')) || raw.envelope);
+  const parsedEnvelopeText =
+    typeof raw.content === 'string' && raw.content.trim().startsWith('{')
+      ? (() => {
+          try {
+            const parsed = JSON.parse(raw.content);
+            return typeof parsed?.text === 'string' ? parsed.text : null;
+          } catch {
+            return null;
+          }
+        })()
+      : null;
   const isEncrypted =
     Boolean(raw.isEncrypted ?? raw.is_encrypted) ||
     hasEnvelopes ||
@@ -264,11 +275,10 @@ export const mapServerMessage = (input: unknown): ChatMessage => {
     raw.messageType === 'e2ee' ||
     raw.type === 'message_envelope' ||
     raw.type === 'message_envelope_sent';
-  const content = !isEncrypted
-    ? (typeof raw.content === 'string' ? raw.content : '')
-    : typeof raw.preview === 'string'
-    ? raw.preview
-    : null;
+  const content =
+    !isEncrypted && !parsedEnvelopeText
+      ? (typeof raw.content === 'string' ? raw.content : '')
+      : null;
 
   const replySource = raw.reply ?? raw.replyMetadata;
   const replyRecord = toRecord(replySource);
@@ -334,7 +344,12 @@ export const mapServerMessage = (input: unknown): ChatMessage => {
         ? raw.sender_device_id
         : null,
     content,
-    preview: typeof raw.preview === 'string' ? raw.preview : null,
+    preview:
+      typeof raw.preview === 'string'
+        ? raw.preview
+        : parsedEnvelopeText
+        ? parsedEnvelopeText
+        : null,
     messageType:
       typeof raw.messageType === 'string'
         ? raw.messageType
