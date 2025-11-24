@@ -137,14 +137,6 @@ const ChatExperience = () => {
         />
       )}
 
-      <EncryptionUnlocker
-        ready={encryption.ready}
-        unlocking={encryption.unlocking}
-        error={chatState.encryptionError || encryption.error}
-        onUnlock={encryption.unlock}
-        onReset={encryption.reset}
-      />
-
       {/* set explicit height to match original visual area and let children use h-full */}
       <div className="mx-auto flex min-h-[72vh] h-[calc(100vh-220px)] max-h-[calc(100vh-140px)] max-w-6xl flex-col overflow-hidden rounded-[32px] border border-white/10 bg-white/5 shadow-[0_30px_120px_rgba(0,0,0,0.55)] backdrop-blur-3xl relative lg:flex-row">
         {/* skeleton frame: shown until chat data finish loading when arriving from navbar */}
