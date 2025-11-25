@@ -624,7 +624,7 @@ export const useChatData = ({
             senderDeviceId: encryptedPayload.senderDeviceId,
             preview: encryptedPayload.preview,
           });
-        } catch () {
+        } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
           setEncryptionError('Nem sikerült titkosítani az üzenetet. Ellenőrizd a PIN kódot.');
           setMessagesByChat((prev) => {
             const list = prev[targetChatId];
