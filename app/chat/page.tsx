@@ -1,6 +1,6 @@
 'use client';
 
-import Navbar from '@/app/components/Navbar';
+
 import { AuthProvider, useAuth } from './AuthProvider';
 import { LoginPanel } from './components/LoginPanel';
 import { ChatSidebar } from './components/ChatSidebar';

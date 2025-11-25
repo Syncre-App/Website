@@ -4,6 +4,7 @@ import type { ChatAttachment, ChatMessage } from '@/lib/types';
 import { FiCheck, FiLock } from 'react-icons/fi';
 import { BsCheck2All } from 'react-icons/bs';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -100,11 +101,16 @@ const AttachmentView = ({ attachment, authToken }: { attachment: ChatAttachment;
         rel="noreferrer"
         className="block overflow-hidden rounded-2xl border border-white/10 bg-black/20"
       >
-        <img
-          src={viewSrc}
-          alt={attachment.name}
-          className="max-h-72 w-full object-cover transition hover:scale-[1.01]"
-        />
+        <div className="relative h-48 w-full">
+          <Image
+            src={viewSrc}
+            alt={attachment.name}
+            fill
+            sizes="100vw"
+            objectFit="cover"
+            className="rounded-2xl transition hover:scale-[1.01]"
+          />
+        </div>
       </a>
     );
   }
@@ -175,9 +181,11 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
         {showSender && !isOwn && (
           <div className="flex items-center gap-2">
             {message.senderAvatar ? (
-              <img
+              <Image
                 src={message.senderAvatar}
                 alt={message.senderName || 'Feladó'}
+                width={24}
+                height={24}
                 className="h-6 w-6 rounded-full object-cover border border-white/20"
               />
             ) : (
@@ -220,10 +228,12 @@ export const MessageBubble = ({ message, isOwn, showSender, canViewEncrypted, au
                   .slice(0, 4)
                   .map((viewer) =>
                     viewer.avatarUrl ? (
-                      <img
+                      <Image
                         key={viewer.userId}
                         src={viewer.avatarUrl}
                         alt={viewer.username || 'Látta'}
+                        width={20}
+                        height={20}
                         className="h-5 w-5 rounded-full border border-white/20 object-cover"
                       />
                     ) : (

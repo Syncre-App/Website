@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import type { ChatMessage, ChatSummary, PresenceStatus, UserProfile } from '@/lib/types';
 import { FiLogOut, FiChevronDown } from 'react-icons/fi';
 import { useAuth } from '../AuthProvider';
@@ -121,9 +122,11 @@ export const ChatSidebar = ({
           className="flex flex-1 items-center gap-3 rounded-2xl bg-white/5 px-3 py-2 transition hover:bg-white/10"
         >
           {user.profile_picture ? (
-            <img
+            <Image
               src={user.profile_picture}
               alt={user.username}
+              width={48}
+              height={48}
               className="h-12 w-12 rounded-full object-cover border border-white/10"
             />
           ) : (
@@ -196,9 +199,11 @@ export const ChatSidebar = ({
               }`}
             >
               {avatar ? (
-                <img
+                <Image
                   src={avatar}
                   alt={title}
+                  width={48}
+                  height={48}
                   className="h-12 w-12 rounded-2xl object-cover border border-white/10"
                 />
               ) : (
