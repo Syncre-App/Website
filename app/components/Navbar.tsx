@@ -2,21 +2,21 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { usePathname, useRouter } from 'next/navigation'; // added useRouter
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, MouseEvent } from 'react';
 
 const navLinks = [
   { href: '/', label: 'Overview' },
   { href: '/#features', label: 'Features' },
   { href: '/#app', label: 'App' },
-  { href: '/chat', label: 'Chat' },
+  // { href: '/chat', label: 'Chat' },
 ];
 
 const sectionLinks = navLinks.filter((link) => link.href.startsWith('/#'));
 
 const Navbar = () => {
   const pathname = usePathname();
-  const router = useRouter(); // added
+  const router = useRouter();
   const [activePath, setActivePath] = useState(pathname || '/');
   const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -40,13 +40,12 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isScrolling]);
 
-  // prefer fragment/hash when present; avoids clobbering after a programmatic click-scroll
   useEffect(() => {
     if (isScrolling) return;
     if (typeof window !== 'undefined') {
-      const hash = window.location.hash; // e.g. "#team"
+      const hash = window.location.hash;
       if (hash) {
-        const hashHref = '/' + hash; // "/#team"
+        const hashHref = '/' + hash;
         if (sectionLinks.some((link) => link.href === hashHref)) {
           setActivePath(hashHref);
           return;
