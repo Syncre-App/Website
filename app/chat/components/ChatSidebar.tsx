@@ -1,7 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import type { ChatMessage, ChatSummary, PresenceStatus, UserProfile } from '@/lib/types';
+import { FiLogOut, FiChevronDown } from 'react-icons/fi';
+import { useAuth } from '../AuthProvider';
 
 interface ChatSidebarProps {
   user: UserProfile;
@@ -27,6 +30,16 @@ const getChatTitle = (chat: ChatSummary, currentUserId: string) => {
     return others[0].username || others[0].email || 'Ismeretlen felhasználó';
   }
   return 'Ismeretlen felhasználó';
+};
+
+const getChatAvatar = (chat: ChatSummary, currentUserId: string) => {
+  if (chat.avatarUrl) return chat.avatarUrl;
+  if (!chat.isGroup) {
+    const others = chat.participants.filter((participant) => participant.id !== currentUserId);
+    const candidate = others[0];
+    return candidate?.profile_picture || candidate?.profilePicture || null;
+  }
+  return null;
 };
 
 const getPresenceLabel = (status?: PresenceStatus) => {
@@ -55,10 +68,11 @@ const formatPreview = (message?: ChatMessage) => {
   if (message.isDeleted) {
     return 'Üzenet törölve';
   }
-  if (message.isEncrypted && !message.content) {
+  const text = message.content || message.preview;
+  if (!text && message.isEncrypted) {
     return '🔒 Titkosított üzenet';
   }
-  return message.content || '🔒 Titkosított üzenet';
+  return text || '🔒 Titkosított üzenet';
 };
 
 const formatUpdatedAt = (value?: string | null) => {
@@ -88,6 +102,8 @@ export const ChatSidebar = ({
   currentUserId,
 }: ChatSidebarProps) => {
   const [query, setQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { logout } = useAuth();
 
   const filteredChats = useMemo(() => {
     if (!query.trim()) {
@@ -98,25 +114,33 @@ export const ChatSidebar = ({
   }, [chats, currentUserId, query]);
 
   return (
-    <aside className="w-full max-w-sm border-r border-white/10 bg-black/20 p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Fiók</p>
-          <h2 className="text-xl font-semibold text-white">{user.username}</h2>
-          <p className="text-xs text-white/60">{user.email}</p>
-        </div>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-lg font-semibold text-blue-100">
-          {user.username?.[0]?.toUpperCase() ?? 'S'}
-        </div>
-      </div>
-      <div className="mb-4 flex items-center gap-2">
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Chat keresése..."
-          className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white outline-none placeholder:text-white/40 focus:border-blue-400"
-        />
+    <aside className="flex h-full w-full max-w-[400px] flex-col gap-3 rounded-3xl bg-white/5 p-5 shadow-[0_18px_70px_rgba(0,0,0,0.55)] backdrop-blur-2xl relative">
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          className="flex flex-1 items-center gap-3 rounded-2xl bg-white/5 px-3 py-2 transition hover:bg-white/10"
+        >
+          {user.profile_picture ? (
+            <Image
+              src={user.profile_picture}
+              alt={user.username}
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-full object-cover border border-white/10"
+            />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-lg font-semibold text-blue-100">
+              {user.username?.[0]?.toUpperCase() ?? 'S'}
+            </div>
+          )}
+          <div className="text-left">
+            <p className="text-[11px] uppercase tracking-[0.35em] text-blue-200/80">Fiók</p>
+            <h2 className="text-xl font-semibold text-white leading-tight">{user.username}</h2>
+            <p className="text-xs text-white/60">{user.email}</p>
+          </div>
+          <FiChevronDown className={`text-white/70 transition ${menuOpen ? 'rotate-180' : ''}`} />
+        </button>
         <button
           onClick={onRefresh}
           className="rounded-2xl border border-white/10 px-3 py-2 text-xs text-white/70 transition hover:border-blue-400"
@@ -124,8 +148,28 @@ export const ChatSidebar = ({
           Frissítés
         </button>
       </div>
+      {menuOpen && (
+        <div className="absolute left-5 top-20 z-30 w-48 rounded-2xl border border-white/10 bg-black/80 p-2 shadow-lg backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={() => logout()}
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-white/80 transition hover:bg-white/10"
+          >
+            <FiLogOut className="text-white/70" /> Kilépés
+          </button>
+        </div>
+      )}
+      <div className="flex items-center gap-2 rounded-2xl bg-white/5 px-3 py-2">
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Chat keresése..."
+          className="flex-1 rounded-xl bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-white/40"
+        />
+      </div>
       {error && <p className="mb-3 rounded-2xl bg-red-500/10 px-3 py-2 text-xs text-red-200">{error}</p>}
-      <div className="space-y-2 overflow-y-auto pr-2" style={{ maxHeight: 'calc(90vh - 220px)' }}>
+      <div className="flex-1 space-y-2 overflow-y-auto pr-1">
         {loading && <p className="text-sm text-white/60">Chat lista betöltése...</p>}
         {!loading && filteredChats.length === 0 && (
           <p className="text-sm text-white/60">Nem található chat.</p>
@@ -137,6 +181,7 @@ export const ChatSidebar = ({
           const typingUsers = typingForChat(chatId);
           const lastMessageList = messagesByChat[chatId] ?? [];
           const lastMessage = lastMessageList[lastMessageList.length - 1];
+          const avatar = getChatAvatar(chat, currentUserId);
           const subtitle = typingUsers.length
             ? `${typingUsers.join(', ')} éppen gépel...`
             : chat.isGroup
@@ -147,15 +192,25 @@ export const ChatSidebar = ({
             <button
               key={chatId}
               onClick={() => onSelectChat(chatId)}
-              className={`flex w-full items-center gap-4 rounded-3xl border px-4 py-3 text-left transition ${
+              className={`flex w-full items-center gap-4 rounded-3xl px-4 py-3 text-left transition ${
                 isSelected
-                  ? 'border-blue-400/60 bg-blue-500/10'
-                  : 'border-white/5 bg-white/0 hover:border-white/20 hover:bg-white/5'
+                  ? 'bg-white/10 ring-1 ring-blue-400/50'
+                  : 'bg-white/5 hover:bg-white/10'
               }`}
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/40 to-indigo-600/40 text-base font-semibold text-white">
-                {chat.isGroup ? '👥' : title[0]?.toUpperCase()}
-              </div>
+              {avatar ? (
+                <Image
+                  src={avatar}
+                  alt={title}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 rounded-2xl object-cover border border-white/10"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/40 to-indigo-600/40 text-base font-semibold text-white">
+                  {chat.isGroup ? '👥' : title[0]?.toUpperCase()}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-white">{title}</p>

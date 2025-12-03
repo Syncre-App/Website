@@ -18,6 +18,8 @@ interface ChatWindowProps {
   onSend: (message: string) => void;
   wsConnected: boolean;
   currentUserId: string;
+  canViewEncrypted: boolean;
+  authToken?: string | null;
 }
 
 const describeChat = (chat: ChatSummary | null, currentUserId: string) => {
@@ -39,6 +41,8 @@ export const ChatWindow = ({
   onSend,
   wsConnected,
   currentUserId,
+  canViewEncrypted,
+  authToken,
 }: ChatWindowProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -92,20 +96,20 @@ export const ChatWindow = ({
   }
 
   return (
-    <section className="flex flex-1 flex-col">
-      <header className="flex items-start justify-between border-b border-white/10 px-8 py-6">
+    <section className="flex flex-1 flex-col bg-gradient-to-br from-[#0f172a]/80 to-[#0b1224]/80">
+      <header className="flex items-center justify-between border-b border-white/5 px-6 py-4 backdrop-blur-xl bg-white/5">
         <div>
-          <p className="text-xs uppercase tracking-[0.4em] text-blue-200/80">Aktív chat</p>
+          <p className="text-[11px] uppercase tracking-[0.35em] text-blue-200/80">Aktív chat</p>
           <h2 className="text-2xl font-semibold text-white">{title}</h2>
           <p className="text-xs text-white/60">{describeChat(chat, currentUserId)}</p>
         </div>
         <ConnectionBadge connected={wsConnected} />
       </header>
-      <div className="flex-1 overflow-hidden px-6 py-4">
+      <div className="flex-1 overflow-hidden px-6 py-5">
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="h-full overflow-y-auto space-y-4 pr-4"
+          className="h-full overflow-y-auto space-y-4 pr-3"
         >
           {hasMore && (
             <button
@@ -126,13 +130,15 @@ export const ChatWindow = ({
                 message={message}
                 isOwn={isOwn}
                 showSender={showSender}
+                canViewEncrypted={canViewEncrypted}
+                authToken={authToken || undefined}
               />
             );
           })}
           <TypingIndicator users={typingUsers} />
         </div>
       </div>
-      <div className="px-8 pb-8">
+      <div className="px-6 pb-6">
         <MessageComposer onSend={onSend} disabled={!wsConnected} onTyping={handleTyping} onStopTyping={handleStopTyping} />
       </div>
     </section>

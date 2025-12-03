@@ -30,12 +30,25 @@ export interface ChatAttachment {
   publicDownloadUrl?: string | null;
 }
 
+export interface EnvelopeEntry {
+  recipientId: string;
+  recipientDevice?: string | null;
+  payload: string;
+  nonce: string;
+  keyVersion?: number;
+  alg?: string;
+  senderIdentityKey?: string | null;
+  senderDeviceId?: string | null;
+  version?: number;
+}
+
 export interface ChatMessage {
   id: string;
   chatId: string;
   senderId: string;
   senderName?: string | null;
   senderAvatar?: string | null;
+  senderDeviceId?: string | null;
   content: string | null;
   messageType: string;
   createdAt: string;
@@ -59,6 +72,7 @@ export interface ChatMessage {
   seenBy?: SeenReceipt[];
   timezone?: string | null;
   pendingId?: string;
+  envelopes?: EnvelopeEntry[];
 }
 
 export interface ChatSummary {

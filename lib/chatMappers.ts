@@ -3,6 +3,7 @@ import type {
   ChatAttachment,
   ChatMessage,
   ChatSummary,
+  EnvelopeEntry,
   PresenceStatus,
   SeenReceipt,
   UserProfile,
@@ -77,8 +78,8 @@ const mapUser = (input: unknown): UserProfile => {
         ? raw.name
         : 'User',
     email: typeof raw.email === 'string' ? raw.email : undefined,
-    profile_picture: avatar,
-    profilePicture: avatar,
+    profile_picture: toAbsoluteUrl(avatar),
+    profilePicture: toAbsoluteUrl(avatar),
     status: typeof raw.status === 'string' ? (raw.status as PresenceStatus) : null,
   };
 };
@@ -123,7 +124,7 @@ export const mapChatSummary = (input: unknown): ChatSummary => {
     ownerId: toValueString(raw.ownerId ?? raw.owner_id) || null,
     name: typeof raw.name === 'string' ? raw.name : null,
     displayName: typeof raw.displayName === 'string' ? raw.displayName : null,
-    avatarUrl: avatar,
+    avatarUrl: toAbsoluteUrl(avatar),
     createdAt,
     updatedAt,
   };
@@ -200,16 +201,84 @@ const mapSeenReceipts = (raw?: unknown): SeenReceipt[] => {
     .filter(Boolean) as SeenReceipt[];
 };
 
+const parseEnvelopes = (raw?: unknown): EnvelopeEntry[] => {
+  if (!raw) return [];
+  let source: unknown = raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      source = parsed.envelopes ?? parsed;
+    } catch {
+      source = null;
+    }
+  }
+  const array = toArray((source as { envelopes?: unknown[] })?.envelopes ?? source);
+  return array
+    .map((entry) => {
+      const record = toRecord(entry);
+      const recipientId = toValueString(record.recipientId ?? record.recipient_id);
+      const payload = toValueString(record.payload);
+      const nonce = toValueString(record.nonce);
+      if (!recipientId || !payload || !nonce) return null;
+      return {
+        recipientId,
+        recipientDevice:
+          typeof record.recipientDevice === 'string'
+            ? record.recipientDevice
+            : typeof record.recipient_device === 'string'
+            ? record.recipient_device
+            : null,
+        payload,
+        nonce,
+        keyVersion: Number(record.keyVersion ?? record.key_version) || undefined,
+        alg: typeof record.alg === 'string' ? record.alg : undefined,
+        senderIdentityKey:
+          typeof record.senderIdentityKey === 'string'
+            ? record.senderIdentityKey
+            : typeof record.sender_identity_key === 'string'
+            ? record.sender_identity_key
+            : undefined,
+        senderDeviceId:
+          typeof record.senderDeviceId === 'string'
+            ? record.senderDeviceId
+            : typeof record.sender_device_id === 'string'
+            ? record.sender_device_id
+            : undefined,
+        version: Number(record.version) || undefined,
+      };
+    })
+    .filter(Boolean) as EnvelopeEntry[];
+};
+
 export const mapServerMessage = (input: unknown): ChatMessage => {
   const raw = toRecord(input);
   const chatId = raw.chatId ?? raw.chat_id;
   const senderId = raw.senderId ?? raw.sender_id;
-  const isEncrypted = Boolean(raw.isEncrypted ?? raw.is_encrypted);
-  const content = !isEncrypted
-    ? (typeof raw.content === 'string' ? raw.content : '')
-    : typeof raw.preview === 'string'
-    ? raw.preview
-    : null;
+  const hasEnvelopes =
+    Array.isArray(raw.envelopes) ||
+    Boolean((typeof raw.envelope === 'string' && raw.envelope.includes('recipientId')) || raw.envelope);
+  const parsedEnvelopeText =
+    typeof raw.content === 'string' && raw.content.trim().startsWith('{')
+      ? (() => {
+          try {
+            const parsed = JSON.parse(raw.content);
+            return typeof parsed?.text === 'string' ? parsed.text : null;
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+  const isEncrypted =
+    Boolean(raw.isEncrypted ?? raw.is_encrypted) ||
+    hasEnvelopes ||
+    raw.message_type === 'e2ee' ||
+    raw.messageType === 'e2ee' ||
+    raw.type === 'message_envelope' ||
+    raw.type === 'message_envelope_sent';
+  const content =
+    !isEncrypted && !parsedEnvelopeText
+      ? (typeof raw.content === 'string' ? raw.content : '')
+      : parsedEnvelopeText;
 
   const replySource = raw.reply ?? raw.replyMetadata;
   const replyRecord = toRecord(replySource);
@@ -268,8 +337,19 @@ export const mapServerMessage = (input: unknown): ChatMessage => {
     senderId: toValueString(senderId) || '',
     senderName,
     senderAvatar: toAbsoluteUrl(senderAvatar),
+    senderDeviceId:
+      typeof raw.senderDeviceId === 'string'
+        ? raw.senderDeviceId
+        : typeof raw.sender_device_id === 'string'
+        ? raw.sender_device_id
+        : null,
     content,
-    preview: typeof raw.preview === 'string' ? raw.preview : null,
+    preview:
+      typeof raw.preview === 'string'
+        ? raw.preview
+        : parsedEnvelopeText
+        ? parsedEnvelopeText
+        : null,
     messageType:
       typeof raw.messageType === 'string'
         ? raw.messageType
@@ -292,5 +372,6 @@ export const mapServerMessage = (input: unknown): ChatMessage => {
     editedAt: normalizeTimestamp(raw.editedAt ?? raw.edited_at),
     seenBy: mapSeenReceipts(raw.seenBy),
     timezone: typeof raw.timezone === 'string' ? raw.timezone : null,
+    envelopes: parseEnvelopes(raw.envelopes ?? raw.envelope),
   };
 };
