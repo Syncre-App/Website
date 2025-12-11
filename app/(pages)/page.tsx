@@ -240,7 +240,7 @@ export default function Home() {
             <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Beta builds</p>
             <h2 className="mt-4 text-3xl font-semibold text-white">Download the Syncre beta today</h2>
             <p className="mt-4 text-gray-200">
-              The mobile beta is live on GitHub (Android) and TestFlight (iOS). Grab the latest build below—no waitlist.
+              The mobile beta is live on GitHub (Android) and App Store (iOS). Grab the latest build below—no waitlist.
             </p>
             <div className="mt-8 grid gap-4 text-left md:grid-cols-3">
               <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
@@ -261,9 +261,9 @@ export default function Home() {
                 </a>
               </div>
               <div className="rounded-2xl border border-white/15 bg-white/5 p-5">
-                <p className="text-sm font-semibold text-white">Apple TestFlight</p>
+                <p className="text-sm font-semibold text-white">Apple App Store</p>
                 <p className="mt-2 text-sm text-gray-300">
-                  Join the TestFlight to install the current iOS beta build.
+                  Go to the Apple App Store and simply download the app.
                 </p>
                 <a
                   href={TESTFLIGHT_JOIN_URL}
@@ -271,7 +271,7 @@ export default function Home() {
                   rel="noreferrer"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 hover:bg-white/90"
                 >
-                  <span className="font-semibold text-gray-900">Download on TestFlight</span>
+                  <span className="font-semibold text-gray-900">Download from App Store</span>
                 </a>
               </div>
               <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 p-5">
