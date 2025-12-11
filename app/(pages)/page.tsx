@@ -70,7 +70,7 @@ type GithubReleaseResponse = {
 
 const ANDROID_RELEASES_PAGE = 'https://github.com/Syncre-App/Mobile/releases';
 const ANDROID_RELEASES_API = 'https://api.github.com/repos/Syncre-App/Mobile/releases/latest';
-const TESTFLIGHT_JOIN_URL = 'https://testflight.apple.com/join/nVdAZ54W';
+const TESTFLIGHT_JOIN_URL = 'https://apps.apple.com/us/app/syncre/id6751552506';
 
 export default function Home() {
   const [androidDownloadUrl, setAndroidDownloadUrl] = useState<string>(ANDROID_RELEASES_PAGE);
