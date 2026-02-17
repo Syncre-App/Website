@@ -2,21 +2,61 @@
 
 :root {
   color-scheme: dark;
-  background-color: #020203;
+  /* iOS-inspired dark palette */
+  --background: #0B0E14;
+  --background-muted: #0E1219;
+  --surface: rgba(255, 255, 255, 0.14);
+  --surface-strong: rgba(255, 255, 255, 0.2);
+  --surface-soft: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.18);
+  --border-strong: rgba(255, 255, 255, 0.28);
+  --text: #F8FAFC;
+  --text-muted: rgba(248, 250, 252, 0.72);
+  --text-subtle: rgba(248, 250, 252, 0.52);
+  --accent: #0A84FF;
+  --accent-secondary: #5AC8FA;
+  --accent-tertiary: #5E5CE6;
+  --success: #34C759;
+  --warning: #FF9F0A;
+  --error: #FF453A;
+  
+  /* Spacing */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 20px;
+  --spacing-xl: 28px;
+  --spacing-xxl: 40px;
+  
+  /* Radii */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-xxl: 36px;
+  --radius-full: 999px;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background-color: var(--background);
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #020203;
-  color: white;
+  background-color: var(--background);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -24,26 +64,194 @@ a {
   text-decoration: none;
 }
 
-/* Global app background matching the Login mock */
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-soft);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface);
+}
+
+/* Selection styling */
+::selection {
+  background: var(--accent);
+  color: white;
+}
+
+/* Global app background with layered gradients */
 .app-bg {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: -1;
-  /* Layered radial gradients for blue/cyan/purple glow on dark */
   background:
-    radial-gradient(800px circle at 20% 12%, rgba(37, 99, 235, 0.35), transparent 60%),
-    radial-gradient(650px circle at 82% 8%, rgba(14, 165, 233, 0.28), transparent 55%),
-    radial-gradient(900px circle at 50% 95%, rgba(99, 102, 241, 0.22), transparent 60%),
-    /* Base dark */
-    radial-gradient(1200px circle at 50% 50%, #020203, #020203);
-  filter: saturate(110%);
+    radial-gradient(1200px circle at 20% 0%, rgba(10, 132, 255, 0.15), transparent 50%),
+    radial-gradient(1000px circle at 80% 0%, rgba(94, 92, 230, 0.12), transparent 50%),
+    radial-gradient(800px circle at 50% 100%, rgba(90, 200, 250, 0.1), transparent 50%),
+    var(--background);
 }
 
-.app-bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  /* Soft vignette to calm edges */
-  background: radial-gradient(1200px circle at 50% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 100%);
+/* Glass morphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(34px);
+  -webkit-backdrop-filter: blur(34px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, rgba(10, 132, 255, 0.9), rgba(94, 92, 230, 0.9));
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-muted {
+  background: var(--surface-soft);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-muted:hover {
+  background: var(--surface);
+}
+
+/* Card styles */
+.card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+/* Input styles */
+.input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.input::placeholder {
+  color: var(--text-subtle);
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Status indicators */
+.status-online {
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+
+.status-offline {
+  background: var(--text-muted);
+}
+
+.status-away {
+  background: var(--warning);
+}
+
+/* Typography utilities */
+.text-display {
+  font-size: 36px;
+  letter-spacing: -0.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.text-title {
+  font-size: 22px;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.text-body {
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--text-muted);
+}
+
+.text-label {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  font-weight: 600;
 }
