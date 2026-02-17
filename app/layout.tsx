@@ -1,7 +1,9 @@
-import type { Metadata } from "next"; 
+import type { Metadata } from "next";
 import "./globals.css";
 import "./polyfills";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { AuthProvider } from "./chat/AuthProvider";
+import Navbar from "./components/Navbar";
 
 export const metadata: Metadata = {
   title: "Syncre",
@@ -30,9 +32,11 @@ export default function RootLayout({
     <>
       <Analytics />
       <html lang="en">
-        <body>
-          <div className="app-bg" aria-hidden="true" />
-          {children}
+        <body className="bg-black">
+          <AuthProvider>
+            <Navbar />
+            {children}
+          </AuthProvider>
         </body>
       </html>
     </>

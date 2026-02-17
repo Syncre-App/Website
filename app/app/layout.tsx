@@ -390,7 +390,10 @@ function TabLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={contextValue}>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-black">
+        {/* Spacer for fixed navbar */}
+        <div className="h-16" />
+        
         {/* Main Content */}
         <main className="flex-1 overflow-auto pb-20">
           {children}

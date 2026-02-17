@@ -2,9 +2,9 @@
 
 :root {
   color-scheme: dark;
-  /* iOS-inspired dark palette */
-  --background: #0B0E14;
-  --background-muted: #0E1219;
+  /* Black background palette */
+  --background: #000000;
+  --background-muted: #111111;
   --surface: rgba(255, 255, 255, 0.14);
   --surface-strong: rgba(255, 255, 255, 0.2);
   --surface-soft: rgba(255, 255, 255, 0.08);
