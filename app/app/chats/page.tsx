@@ -43,16 +43,6 @@ export default function ChatsPage() {
       <header className="fixed top-16 left-0 right-0 z-40 bg-black/90 backdrop-blur-md border-b border-white/10 px-4 py-3">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <h1 className="text-xl font-bold text-white">Chats</h1>
-          {user && (
-            <div className="relative">
-              <img
-                src={user.profile_picture || '/default-avatar.svg'}
-                alt={user.username}
-                className="w-9 h-9 rounded-full object-cover border-2 border-white/20"
-              />
-              <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${isOnline ? 'bg-green-500' : 'bg-gray-500'}`} />
-            </div>
-          )}
         </div>
       </header>
 

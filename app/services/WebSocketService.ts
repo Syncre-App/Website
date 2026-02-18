@@ -64,7 +64,7 @@ class WebSocketServiceClass {
     this.send({ type: 'chat_leave', chatId });
   }
 
-  sendMessage(data: { chatId: string; content?: string; deviceId: string }): void {
+  sendMessage(data: { chatId: string; content?: string; deviceId: string; tempId?: string }): void {
     this.send({ type: 'message_send', ...data });
   }
 

@@ -18,8 +18,15 @@ interface Message {
   createdAt?: string;
   timestamp?: string;
   is_encrypted?: boolean;
+  isEncrypted?: boolean;
   envelopes?: any[];
   sender_identity_key?: string;
+  senderName?: string;
+  senderAvatar?: string;
+  senderBadges?: string[];
+  attachments?: any[];
+  isDeleted?: boolean;
+  reply?: any;
 }
 
 export default function ChatDetailPage() {
@@ -31,8 +38,8 @@ export default function ChatDetailPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [decryptedCache, setDecryptedCache] = useState<Record<string, string>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const tempIdCounter = useRef(0);
 
   const chat = chats.find(c => c.id?.toString() === chatId);
 
@@ -47,25 +54,17 @@ export default function ChatDetailPage() {
     return otherParticipant?.username || 'Unknown';
   };
 
-  // Load and decrypt messages
+  // Load messages from API
   useEffect(() => {
     const loadMessages = async () => {
-      const response = await ApiService.get(`/chat/${chatId}/messages?limit=50`);
-      if (response.success && response.data?.messages) {
-        const msgs = response.data.messages;
-        setMessages(msgs);
-        
-        // Try to decrypt messages
-        const decrypted: Record<string, string> = {};
-        for (const msg of msgs) {
-          if (msg.is_encrypted && msg.envelopes) {
-            // For now, show as encrypted - in production would decrypt with identity key
-            decrypted[msg.id.toString()] = '🔒 Encrypted message';
-          } else {
-            decrypted[msg.id.toString()] = msg.content || msg.text || msg.message || '';
-          }
+      try {
+        const response = await ApiService.get(`/chat/${chatId}/messages?limit=50`);
+        if (response.success && response.data?.messages) {
+          const msgs = response.data.messages;
+          setMessages(msgs);
         }
-        setDecryptedCache(decrypted);
+      } catch (error) {
+        console.error('Failed to load messages:', error);
       }
       setLoading(false);
     };
@@ -88,15 +87,40 @@ export default function ChatDetailPage() {
       if (wsMsg.type === 'new_message' && wsMsg.chatId?.toString() === chatId) {
         const newMsg: Message = {
           id: wsMsg.messageId || wsMsg.id,
-          sender_id: wsMsg.senderId,
+          senderId: wsMsg.senderId,
+          senderName: wsMsg.senderName,
+          senderAvatar: wsMsg.senderAvatar,
           content: wsMsg.content,
-          created_at: wsMsg.createdAt || new Date().toISOString(),
-          is_encrypted: wsMsg.isEncrypted,
+          createdAt: wsMsg.createdAt || new Date().toISOString(),
+          isEncrypted: wsMsg.isEncrypted,
+          envelopes: wsMsg.envelopes,
+          attachments: wsMsg.attachments || [],
         };
-        setMessages(prev => [...prev, newMsg]);
-        if (newMsg.content) {
-          setDecryptedCache(prev => ({ ...prev, [newMsg.id.toString()]: newMsg.content }));
-        }
+        
+        setMessages(prev => {
+          // Check if we already have this message (by temp ID or real ID)
+          const exists = prev.some(m => 
+            m.id.toString() === newMsg.id.toString() || 
+            (wsMsg.tempId && m.id.toString() === wsMsg.tempId.toString())
+          );
+          if (exists) {
+            // Replace temp message with real one
+            return prev.map(m => 
+              (wsMsg.tempId && m.id.toString() === wsMsg.tempId.toString()) ||
+              m.id.toString() === newMsg.id.toString()
+                ? newMsg 
+                : m
+            );
+          }
+          return [...prev, newMsg];
+        });
+      } else if (wsMsg.type === 'message_ack' && wsMsg.tempId) {
+        // Update temp message with real ID
+        setMessages(prev => prev.map(m => 
+          m.id.toString() === wsMsg.tempId.toString()
+            ? { ...m, id: wsMsg.messageId || m.id }
+            : m
+        ));
       }
     });
 
@@ -114,35 +138,22 @@ export default function ChatDetailPage() {
     const content = newMessage.trim();
     setNewMessage('');
 
-    // Optimistic update
-    const tempId = `temp-${Date.now()}`;
+    // Create temp message
+    tempIdCounter.current += 1;
+    const tempId = `temp-${tempIdCounter.current}-${Date.now()}`;
     const tempMsg: Message = {
       id: tempId,
-      sender_id: user?.id,
+      senderId: user?.id,
+      senderName: user?.username,
+      senderAvatar: user?.profile_picture,
       content,
-      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     };
     setMessages(prev => [...prev, tempMsg]);
-    setDecryptedCache(prev => ({ ...prev, [tempId]: content }));
 
-    // Send via API
-    const response = await ApiService.post(`/chat/${chatId}/messages`, { content });
-    if (response.success) {
-      const savedMsg = response.data;
-      setMessages(prev => prev.map(m => m.id === tempId ? { ...savedMsg, id: savedMsg.id?.toString() } : m));
-      setDecryptedCache(prev => {
-        const updated = { ...prev };
-        delete updated[tempId];
-        updated[savedMsg.id.toString()] = content;
-        return updated;
-      });
-      
-      // Also send via WebSocket
-      const deviceId = await StorageService.getDeviceId();
-      WebSocketService.sendMessage({ chatId, content, deviceId });
-    } else {
-      setMessages(prev => prev.filter(m => m.id !== tempId));
-    }
+    // Send via WebSocket only (no API endpoint for sending)
+    const deviceId = await StorageService.getDeviceId();
+    WebSocketService.sendMessage({ chatId, content, deviceId, tempId });
   };
 
   const isOwn = (msg: Message) => {
@@ -164,6 +175,32 @@ export default function ChatDetailPage() {
     } catch {
       return '';
     }
+  };
+
+  const getMessageContent = (msg: Message) => {
+    // If message has content, show it
+    if (msg.content && msg.content.trim()) {
+      return msg.content;
+    }
+    
+    // If encrypted and has envelopes, show encrypted indicator
+    if ((msg.is_encrypted || msg.isEncrypted) && msg.envelopes?.length > 0) {
+      return '🔒 Encrypted message';
+    }
+    
+    // Check other possible content fields
+    const possibleContent = msg.text || msg.message;
+    if (possibleContent && possibleContent.trim()) {
+      return possibleContent;
+    }
+    
+    // If has attachments, show attachment indicator
+    if (msg.attachments && msg.attachments.length > 0) {
+      const attachmentCount = msg.attachments.length;
+      return `📎 ${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''}`;
+    }
+    
+    return null;
   };
 
   // Get online status of other participant
@@ -241,12 +278,8 @@ export default function ChatDetailPage() {
               const own = isOwn(msg);
               const prevMsg = i > 0 ? messages[i-1] : null;
               const showAvatar = !own && prevMsg && !isOwn(prevMsg);
-              const content = decryptedCache[msg.id.toString()] || 
-                (msg.is_encrypted ? '🔒 Encrypted message' : msg.content || msg.text || msg.message || '');
-              
-              if (!content && !msg.is_encrypted) {
-                console.log('Message without content:', msg);
-              }
+              const content = getMessageContent(msg);
+              const isDeleted = msg.isDeleted;
               
               return (
                 <div key={msg.id} className={`flex ${own ? 'justify-end' : 'justify-start'} items-end gap-2`}>
@@ -263,9 +296,15 @@ export default function ChatDetailPage() {
                   )}
                   <div className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${
                     own ? 'bg-blue-500 text-white rounded-br-md' : 'bg-white/10 text-white rounded-bl-md'
-                  }`}>
+                  } ${isDeleted ? 'opacity-50' : ''}`}>
                     <p className="text-[15px] break-words">
-                      {content || <span className="italic text-white/50">(No content)</span>}
+                      {isDeleted ? (
+                        <span className="italic text-white/50">Message deleted</span>
+                      ) : content ? (
+                        content
+                      ) : (
+                        <span className="italic text-white/50">(No content)</span>
+                      )}
                     </p>
                     <span className={`text-[10px] mt-1 block ${own ? 'text-white/70' : 'text-white/50'}`}>
                       {getMessageDate(msg)}
