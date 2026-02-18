@@ -1,9 +1,13 @@
 // Web CryptoService - End-to-End Encryption for Web
-// Uses Web Crypto API and IndexedDB for secure storage
+// Uses the same encryption as mobile app: X25519 + XChaCha20Poly1305
 
 import { ApiService } from './ApiService';
+import { HKDF } from '@stablelib/hkdf';
+import { SHA256 } from '@stablelib/sha256';
+import { deriveKey as pbkdf2DeriveKey } from '@stablelib/pbkdf2';
+import { XChaCha20Poly1305 } from '@stablelib/xchacha20poly1305';
 
-// Constants matching mobile app
+// Constants matching mobile app exactly
 const KEY_INFO_CONTEXT = 'syncre-chat-v1';
 const BACKUP_KEY_INFO = 'syncre-backup-v1';
 const HKDF_KEY_LENGTH = 32;
@@ -59,7 +63,7 @@ export interface BackupEnvelope {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Utility Functions
+// Utility Functions (same as mobile)
 // ═══════════════════════════════════════════════════════════════
 
 const toBase64 = (bytes: Uint8Array): string => {
@@ -150,65 +154,21 @@ const deleteSecureItem = async (key: string): Promise<void> => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// Key Derivation using Web Crypto API
+// Key Derivation (same as mobile)
 // ═══════════════════════════════════════════════════════════════
 
-const deriveSymmetricKey = async (
-  sharedSecret: Uint8Array,
-  chatId: string
-): Promise<Uint8Array> => {
+const deriveSymmetricKey = (sharedSecret: Uint8Array, chatId: string): Uint8Array => {
   const info = utf8ToBytes(`${KEY_INFO_CONTEXT}:${chatId}`);
   const salt = new Uint8Array(HKDF_KEY_LENGTH);
-  
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    sharedSecret,
-    { name: 'HKDF' },
-    false,
-    ['deriveBits']
-  );
-  
-  const derivedBits = await crypto.subtle.deriveBits(
-    {
-      name: 'HKDF',
-      hash: 'SHA-256',
-      salt,
-      info
-    },
-    keyMaterial,
-    HKDF_KEY_LENGTH * 8
-  );
-  
-  return new Uint8Array(derivedBits);
+  const hkdf = new HKDF(SHA256, sharedSecret, salt, info);
+  const key = hkdf.expand(HKDF_KEY_LENGTH);
+  hkdf.clean();
+  return key;
 };
 
-const derivePasswordKey = async (
-  password: string,
-  salt: Uint8Array,
-  iterations: number
-): Promise<Uint8Array> => {
+const derivePasswordKey = (password: string, salt: Uint8Array, iterations: number): Uint8Array => {
   const passwordBytes = utf8ToBytes(password);
-  
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    passwordBytes,
-    'PBKDF2',
-    false,
-    ['deriveBits']
-  );
-  
-  const derivedBits = await crypto.subtle.deriveBits(
-    {
-      name: 'PBKDF2',
-      salt,
-      iterations,
-      hash: 'SHA-256'
-    },
-    keyMaterial,
-    256
-  );
-  
-  return new Uint8Array(derivedBits);
+  return pbkdf2DeriveKey(SHA256, passwordBytes, salt, iterations, 32);
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -247,88 +207,34 @@ const ensureIdentityAvailable = async (): Promise<IdentityKeyPair> => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// Encryption/Decryption using Web Crypto (AES-GCM as alternative to XChaCha20)
-// ═══════════════════════════════════════════════════════════════
-
-const encryptWithKey = async (
-  plaintext: Uint8Array,
-  key: Uint8Array,
-  nonce: Uint8Array
-): Promise<Uint8Array> => {
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    key,
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt']
-  );
-  
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: nonce },
-    cryptoKey,
-    plaintext
-  );
-  
-  return new Uint8Array(ciphertext);
-};
-
-const decryptWithKey = async (
-  ciphertext: Uint8Array,
-  key: Uint8Array,
-  nonce: Uint8Array
-): Promise<Uint8Array | null> => {
-  try {
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      key,
-      { name: 'AES-GCM' },
-      false,
-      ['decrypt']
-    );
-    
-    const plaintext = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: nonce },
-      cryptoKey,
-      ciphertext
-    );
-    
-    return new Uint8Array(plaintext);
-  } catch (error) {
-    return null;
-  }
-};
-
-// ═══════════════════════════════════════════════════════════════
-// X25519 Key Exchange using Web Crypto ( ECDH )
-// Note: Web Crypto doesn't support X25519 directly, so we use ECDH P-256
-// For X25519, we would need a library like tweetnacl.js
+// X25519 Key Exchange using tweetnacl (same as mobile)
 // ═══════════════════════════════════════════════════════════════
 
 let nacl: any = null;
 
 const loadNacl = async () => {
   if (nacl) return nacl;
-  // Dynamic import of tweetnacl
   const module = await import('tweetnacl');
   nacl = module.default;
   return nacl;
 };
 
 // ═══════════════════════════════════════════════════════════════
-// Identity Key Management
+// Identity Key Management (same encryption as mobile)
 // ═══════════════════════════════════════════════════════════════
 
-const encryptPrivateKeyWithPassword = async (
+const encryptPrivateKeyWithPassword = (
   privateKey: Uint8Array,
   password: string
-): Promise<{ encryptedPrivateKey: string; nonce: string; salt: string; iterations: number }> => {
+): { encryptedPrivateKey: string; nonce: string; salt: string; iterations: number } => {
   const salt = randomBytes(32);
-  const nonce = randomBytes(12);
+  const nonce = randomBytes(24); // XChaCha20 uses 24-byte nonce
   const iterations = IDENTITY_PBKDF_ITERATIONS;
   
-  const keyBytes = await derivePasswordKey(password, salt, iterations);
-  
-  const encrypted = await encryptWithKey(privateKey, keyBytes, nonce);
+  const keyBytes = derivePasswordKey(password, salt, iterations);
+  const cipher = new XChaCha20Poly1305(keyBytes);
+  const encrypted = cipher.seal(nonce, privateKey);
+  cipher.clean();
   
   return {
     encryptedPrivateKey: toBase64(encrypted),
@@ -338,20 +244,18 @@ const encryptPrivateKeyWithPassword = async (
   };
 };
 
-const decryptPrivateKeyWithPassword = async (
+const decryptPrivateKeyWithPassword = (
   encryptedPrivateKey: string,
   nonce: string,
   salt: string,
   iterations: number,
   password: string
-): Promise<Uint8Array> => {
-  const keyBytes = await derivePasswordKey(password, fromBase64(salt), iterations);
+): Uint8Array => {
+  const keyBytes = derivePasswordKey(password, fromBase64(salt), iterations);
+  const cipher = new XChaCha20Poly1305(keyBytes);
   
-  const decrypted = await decryptWithKey(
-    fromBase64(encryptedPrivateKey),
-    keyBytes,
-    fromBase64(nonce)
-  );
+  const decrypted = cipher.open(fromBase64(nonce), fromBase64(encryptedPrivateKey));
+  cipher.clean();
   
   if (!decrypted) {
     throw new Error('Failed to decrypt identity key. Wrong password?');
@@ -384,8 +288,8 @@ class CryptoServiceClass {
       keyVersion: 1,
     };
     
-    // Encrypt private key with password
-    const encrypted = await encryptPrivateKeyWithPassword(
+    // Encrypt private key with password using XChaCha20Poly1305
+    const encrypted = encryptPrivateKeyWithPassword(
       keypair.secretKey,
       password
     );
@@ -415,7 +319,7 @@ class CryptoServiceClass {
     
     const identityKey = response.data as EncryptedIdentityKey;
     
-    const privateKeyBytes = await decryptPrivateKeyWithPassword(
+    const privateKeyBytes = decryptPrivateKeyWithPassword(
       identityKey.encryptedPrivateKey,
       identityKey.nonce,
       identityKey.salt,
@@ -433,7 +337,7 @@ class CryptoServiceClass {
     console.log('[CryptoService] Identity decrypted from server');
   }
   
-  // Encrypt a message for recipients
+  // Encrypt a message for recipients (same as mobile)
   async encryptMessage(params: {
     message: string;
     chatId: string;
@@ -456,11 +360,13 @@ class CryptoServiceClass {
         try {
           const recipientPublicKey = fromBase64(recipient.publicKey);
           const ephemeralSecret = naclLib.box.before(recipientPublicKey, ephemeral.secretKey);
-          const symmetricKey = await deriveSymmetricKey(ephemeralSecret, params.chatId);
+          const symmetricKey = deriveSymmetricKey(ephemeralSecret, params.chatId);
           
-          const nonce = randomBytes(12);
+          const cipher = new XChaCha20Poly1305(symmetricKey);
+          const nonce = randomBytes(24); // XChaCha20 uses 24-byte nonce
           const plaintext = utf8ToBytes(message);
-          const ciphertext = await encryptWithKey(plaintext, symmetricKey, nonce);
+          const ciphertext = cipher.seal(nonce, plaintext);
+          cipher.clean();
           
           envelopes.push({
             recipientId: recipient.userId,
@@ -468,7 +374,7 @@ class CryptoServiceClass {
             payload: toBase64(ciphertext),
             nonce: toBase64(nonce),
             keyVersion: identity.keyVersion,
-            alg: 'AES-GCM',
+            alg: 'nacl_box_xchacha20poly1305',
             senderIdentityKey: identity.publicKey,
             version: 1,
           });
@@ -481,11 +387,13 @@ class CryptoServiceClass {
       try {
         const selfPublicKey = fromBase64(identity.publicKey);
         const ephemeralSecret = naclLib.box.before(selfPublicKey, ephemeral.secretKey);
-        const symmetricKey = await deriveSymmetricKey(ephemeralSecret, params.chatId);
+        const symmetricKey = deriveSymmetricKey(ephemeralSecret, params.chatId);
         
-        const nonce = randomBytes(12);
+        const cipher = new XChaCha20Poly1305(symmetricKey);
+        const nonce = randomBytes(24);
         const plaintext = utf8ToBytes(message);
-        const ciphertext = await encryptWithKey(plaintext, symmetricKey, nonce);
+        const ciphertext = cipher.seal(nonce, plaintext);
+        cipher.clean();
         
         // Get current user ID
         const userResponse = await ApiService.get('/user/me');
@@ -496,7 +404,7 @@ class CryptoServiceClass {
             payload: toBase64(ciphertext),
             nonce: toBase64(nonce),
             keyVersion: identity.keyVersion,
-            alg: 'AES-GCM',
+            alg: 'nacl_box_xchacha20poly1305',
             senderIdentityKey: identity.publicKey,
             version: 1,
           });
@@ -519,7 +427,7 @@ class CryptoServiceClass {
     }
   }
   
-  // Decrypt a message envelope
+  // Decrypt a message envelope (same as mobile)
   async decryptMessage(params: {
     envelope: EnvelopeEntry;
     senderId: string;
@@ -529,46 +437,31 @@ class CryptoServiceClass {
       const { envelope, chatId } = params;
       
       console.log('[CryptoService] Decrypting message in chat:', chatId);
-      console.log('[CryptoService] Envelope data:', {
-        recipientId: envelope.recipientId,
-        alg: envelope.alg,
-        hasSenderKey: !!envelope.senderIdentityKey,
-        keyVersion: envelope.keyVersion,
-      });
       
       const identity = await ensureIdentityAvailable();
-      console.log('[CryptoService] Identity loaded, public key:', identity.publicKey.substring(0, 20) + '...');
-      
       const naclLib = await loadNacl();
       
-      // Extract ephemeral public key from sender
-      const senderPublicKey = envelope.senderIdentityKey 
-        ? fromBase64(envelope.senderIdentityKey)
-        : null;
-      
-      if (!senderPublicKey) {
-        console.error('[CryptoService] No sender identity key in envelope');
+      // Get sender public key
+      let senderKeyBase64 = envelope.senderIdentityKey;
+      if (!senderKeyBase64) {
+        console.warn('[CryptoService] Missing sender identity key in envelope');
         return null;
       }
       
-      console.log('[CryptoService] Sender public key length:', senderPublicKey.length);
-      
-      const privateKey = fromBase64(identity.privateKey);
-      console.log('[CryptoService] Private key loaded, length:', privateKey.length);
+      const senderKeyBytes = fromBase64(senderKeyBase64);
+      const privateKeyBytes = fromBase64(identity.privateKey);
       
       // Perform X25519 key exchange
-      const sharedSecret = naclLib.box.before(senderPublicKey, privateKey);
-      console.log('[CryptoService] Shared secret derived, length:', sharedSecret.length);
+      const sharedSecret = naclLib.box.before(senderKeyBytes, privateKeyBytes);
+      const symmetricKey = deriveSymmetricKey(sharedSecret, chatId);
       
-      const symmetricKey = await deriveSymmetricKey(sharedSecret, chatId);
-      console.log('[CryptoService] Symmetric key derived, length:', symmetricKey.length);
-      
-      // Decrypt
+      // Decrypt with XChaCha20Poly1305
+      const cipher = new XChaCha20Poly1305(symmetricKey);
       const nonce = fromBase64(envelope.nonce);
-      console.log('[CryptoService] Nonce length:', nonce.length);
       const ciphertext = fromBase64(envelope.payload);
       
-      const plaintext = await decryptWithKey(ciphertext, symmetricKey, nonce);
+      const plaintext = cipher.open(nonce, ciphertext);
+      cipher.clean();
       
       if (!plaintext) {
         console.error('[CryptoService] Decryption failed - likely wrong key');

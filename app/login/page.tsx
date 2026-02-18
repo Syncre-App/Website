@@ -46,13 +46,27 @@ export default function LoginPage() {
           try {
             await CryptoService.decryptIdentityFromServer(password);
             router.push('/app/chats');
-          } catch {
-            // No identity on server, create one automatically with login password
+          } catch (decryptErr: any) {
+            console.log('[Login] Failed to decrypt identity from server:', decryptErr.message);
+            
+            // Check if it's a nonce length error (old AES-GCM encrypted key)
+            if (decryptErr?.message?.includes('incorrect nonce length')) {
+              console.log('[Login] Old identity key format detected, resetting...');
+              // Delete old identity from server
+              try {
+                await ApiService.delete('/keys/identity');
+                console.log('[Login] Old identity deleted from server');
+              } catch (deleteErr) {
+                console.warn('[Login] Could not delete old identity:', deleteErr);
+              }
+            }
+            
+            // Create new identity
             try {
               await CryptoService.initializeIdentity(password);
               router.push('/app/chats');
-            } catch (err) {
-              console.error('Failed to create E2EE identity:', err);
+            } catch (initErr) {
+              console.error('Failed to create E2EE identity:', initErr);
               // Continue without E2EE
               router.push('/app/chats');
             }
