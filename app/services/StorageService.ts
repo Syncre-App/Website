@@ -1,5 +1,5 @@
 // StorageService.ts - Browser storage wrapper
-const AUTH_TOKEN_KEY = 'auth_token';
+const AUTH_TOKEN_KEY = 'syncre_auth_token';
 const USER_DATA_KEY = 'user_data';
 
 class StorageServiceClass {

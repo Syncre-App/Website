@@ -23,7 +23,7 @@ class WebSocketServiceClass {
   }
 
   async connect(): Promise<void> {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('syncre_auth_token');
     if (!token) return;
 
     this.ws = new WebSocket(this.WS_URL);

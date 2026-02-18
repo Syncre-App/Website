@@ -21,7 +21,7 @@ class ApiServiceClass {
 
   private getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token');
+      return localStorage.getItem('syncre_auth_token');
     }
     return null;
   }
