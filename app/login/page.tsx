@@ -45,7 +45,7 @@ export default function LoginPage() {
           // Try to decrypt from server first
           try {
             await CryptoService.decryptIdentityFromServer(password);
-            router.push('/app/chats');
+            console.log('[Login] Identity decrypted from server');
           } catch (decryptErr: any) {
             console.log('[Login] Failed to decrypt identity from server:', decryptErr.message);
             
@@ -64,16 +64,26 @@ export default function LoginPage() {
             // Create new identity
             try {
               await CryptoService.initializeIdentity(password);
-              router.push('/app/chats');
+              console.log('[Login] New identity created');
             } catch (initErr) {
               console.error('Failed to create E2EE identity:', initErr);
-              // Continue without E2EE
-              router.push('/app/chats');
             }
           }
-        } else {
-          router.push('/app/chats');
         }
+        
+        // Initialize backup key for message history access
+        try {
+          const backupSuccess = await CryptoService.initializeBackupKey({ password });
+          if (backupSuccess) {
+            console.log('[Login] Backup key initialized');
+          } else {
+            console.warn('[Login] Backup key initialization failed');
+          }
+        } catch (backupErr) {
+          console.warn('[Login] Backup key error:', backupErr);
+        }
+        
+        router.push('/app/chats');
       } else {
         setError(response.error || 'Invalid credentials');
       }
