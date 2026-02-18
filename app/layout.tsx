@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./polyfills";
 import { Analytics } from "@vercel/analytics/next";
-import { AuthProvider } from "./chat/AuthProvider";
+import { AuthProvider } from "../lib/AuthProvider";
 import Navbar from "./components/Navbar";
 
 export const metadata: Metadata = {

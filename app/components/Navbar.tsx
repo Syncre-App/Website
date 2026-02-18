@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, MouseEvent } from 'react';
-import { useAuth } from '../chat/AuthProvider';
+import { useAuth } from '../../lib/AuthProvider';
 
 const navLinks = [
   { href: '/', label: 'Overview' },
