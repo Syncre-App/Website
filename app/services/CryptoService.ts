@@ -186,7 +186,7 @@ const derivePasswordKey = async (
   password: string,
   salt: Uint8Array,
   iterations: number
-): Promise<CryptoKey> => {
+): Promise<Uint8Array> => {
   const passwordBytes = utf8ToBytes(password);
   
   const keyMaterial = await crypto.subtle.importKey(
@@ -197,7 +197,7 @@ const derivePasswordKey = async (
     ['deriveBits']
   );
   
-  return await crypto.subtle.deriveBits(
+  const derivedBits = await crypto.subtle.deriveBits(
     {
       name: 'PBKDF2',
       salt,
@@ -206,13 +206,9 @@ const derivePasswordKey = async (
     },
     keyMaterial,
     256
-  ).then(bits => crypto.subtle.importKey(
-    'raw',
-    new Uint8Array(bits),
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt', 'decrypt']
-  ));
+  );
+  
+  return new Uint8Array(derivedBits);
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -330,9 +326,7 @@ const encryptPrivateKeyWithPassword = async (
   const nonce = randomBytes(12);
   const iterations = IDENTITY_PBKDF_ITERATIONS;
   
-  const key = await derivePasswordKey(password, salt, iterations);
-  const exportedKey = await crypto.subtle.exportKey('raw', key);
-  const keyBytes = new Uint8Array(exportedKey);
+  const keyBytes = await derivePasswordKey(password, salt, iterations);
   
   const encrypted = await encryptWithKey(privateKey, keyBytes, nonce);
   
@@ -351,9 +345,7 @@ const decryptPrivateKeyWithPassword = async (
   iterations: number,
   password: string
 ): Promise<Uint8Array> => {
-  const key = await derivePasswordKey(password, fromBase64(salt), iterations);
-  const exportedKey = await crypto.subtle.exportKey('raw', key);
-  const keyBytes = new Uint8Array(exportedKey);
+  const keyBytes = await derivePasswordKey(password, fromBase64(salt), iterations);
   
   const decrypted = await decryptWithKey(
     fromBase64(encryptedPrivateKey),
