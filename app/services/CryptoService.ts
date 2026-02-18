@@ -427,17 +427,118 @@ class CryptoServiceClass {
     }
   }
   
+  // Initialize backup key from password (same as mobile)
+  async initializeBackupKey(params: { password: string }): Promise<boolean> {
+    try {
+      // 1. Try to get existing backup salt from server
+      const saltResponse = await ApiService.get('/keys/backup/salt');
+      let salt: Uint8Array;
+
+      if (saltResponse.success && saltResponse.data?.salt) {
+        // Use existing salt
+        salt = fromBase64(saltResponse.data.salt);
+        console.log('[CryptoService] Using existing backup salt from server');
+      } else {
+        // Generate new salt (first device)
+        salt = randomBytes(32);
+        const saveResponse = await ApiService.post('/keys/backup/salt', {
+          salt: toBase64(salt),
+          version: 1,
+        });
+        if (!saveResponse.success) {
+          console.error('[CryptoService] Failed to save backup salt:', saveResponse.error);
+          return false;
+        }
+        console.log('[CryptoService] Created and saved new backup salt');
+      }
+
+      // 2. Derive backup key from password using PBKDF2 + HKDF
+      const passwordBytes = utf8ToBytes(params.password);
+      const passwordKey = pbkdf2DeriveKey(SHA256, passwordBytes, salt, IDENTITY_PBKDF_ITERATIONS, 32);
+
+      const info = utf8ToBytes(BACKUP_KEY_INFO);
+      const hkdf = new HKDF(SHA256, passwordKey, new Uint8Array(32), info);
+      const backupKey = hkdf.expand(HKDF_KEY_LENGTH);
+      hkdf.clean();
+
+      // 3. Store in IndexedDB
+      await writeSecureItem(BACKUP_KEY_STORAGE, toBase64(backupKey));
+      await writeSecureItem(BACKUP_SALT_STORAGE, toBase64(salt));
+
+      console.log('[CryptoService] Backup key initialized successfully');
+      return true;
+    } catch (error) {
+      console.error('[CryptoService] Failed to initialize backup key:', error);
+      return false;
+    }
+  }
+
+  // Get the stored backup key
+  async getBackupKey(): Promise<Uint8Array | null> {
+    try {
+      const keyBase64 = await readSecureItem(BACKUP_KEY_STORAGE);
+      if (!keyBase64) {
+        return null;
+      }
+      return fromBase64(keyBase64);
+    } catch (error) {
+      console.error('[CryptoService] Failed to get backup key:', error);
+      return null;
+    }
+  }
+
+  // Check if backup key is available
+  async hasBackupKey(): Promise<boolean> {
+    try {
+      const keyBase64 = await readSecureItem(BACKUP_KEY_STORAGE);
+      return Boolean(keyBase64);
+    } catch {
+      return false;
+    }
+  }
+
+  // Decrypt message from backup envelope
+  async decryptFromBackup(backupEnvelope: {
+    payload: string;
+    nonce: string;
+  }): Promise<string | null> {
+    try {
+      const backupKey = await this.getBackupKey();
+      if (!backupKey) {
+        console.warn('[CryptoService] No backup key available for decryption');
+        return null;
+      }
+
+      const cipher = new XChaCha20Poly1305(backupKey);
+      const nonce = fromBase64(backupEnvelope.nonce);
+      const ciphertext = fromBase64(backupEnvelope.payload);
+
+      const plaintext = cipher.open(nonce, ciphertext);
+      if (!plaintext) {
+        console.error('[CryptoService] Failed to decrypt backup envelope');
+        return null;
+      }
+
+      return bytesToUtf8(plaintext);
+    } catch (error) {
+      console.error('[CryptoService] Failed to decrypt from backup:', error);
+      return null;
+    }
+  }
+
   // Decrypt a message envelope (same as mobile)
   async decryptMessage(params: {
     envelope: EnvelopeEntry;
     senderId: string;
     chatId: string;
+    backupEnvelope?: { payload: string; nonce: string } | null;
   }): Promise<string | null> {
     try {
-      const { envelope, chatId } = params;
+      const { envelope, chatId, backupEnvelope } = params;
       
       console.log('[CryptoService] Decrypting message in chat:', chatId);
       
+      // Try primary envelope first
       const identity = await ensureIdentityAvailable();
       const naclLib = await loadNacl();
       
@@ -463,12 +564,22 @@ class CryptoServiceClass {
       const plaintext = cipher.open(nonce, ciphertext);
       cipher.clean();
       
-      if (!plaintext) {
-        console.error('[CryptoService] Decryption failed - likely wrong key');
-        return null;
+      if (plaintext) {
+        return bytesToUtf8(plaintext);
       }
       
-      return bytesToUtf8(plaintext);
+      // If primary decryption failed, try backup envelope
+      console.log('[CryptoService] Primary decryption failed, trying backup...');
+      if (backupEnvelope) {
+        const backupPlaintext = await this.decryptFromBackup(backupEnvelope);
+        if (backupPlaintext) {
+          console.log('[CryptoService] Decrypted from backup successfully');
+          return backupPlaintext;
+        }
+      }
+      
+      console.error('[CryptoService] Decryption failed - no valid envelope found');
+      return null;
     } catch (error) {
       console.error('[CryptoService] Failed to decrypt message:', error);
       return null;
