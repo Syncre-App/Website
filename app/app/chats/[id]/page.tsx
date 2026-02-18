@@ -8,10 +8,15 @@ import { WebSocketService } from '../../../services/WebSocketService';
 import { StorageService } from '../../../services/StorageService';
 
 interface Message {
-  id: string;
-  sender_id: string;
-  content: string;
-  created_at: string;
+  id: string | number;
+  sender_id?: string | number;
+  senderId?: string | number;
+  content?: string;
+  text?: string;
+  message?: string;
+  created_at?: string;
+  createdAt?: string;
+  timestamp?: string;
 }
 
 export default function ChatDetailPage() {
@@ -66,7 +71,12 @@ export default function ChatDetailPage() {
 
     // Optimistic update
     const tempId = `temp-${Date.now()}`;
-    setMessages(prev => [...prev, { id: tempId, sender_id: user?.id, content, created_at: new Date().toISOString() }]);
+    setMessages(prev => [...prev, { 
+      id: tempId, 
+      sender_id: user?.id, 
+      content, 
+      created_at: new Date().toISOString() 
+    }]);
 
     // Send via API
     const response = await ApiService.post(`/chat/${chatId}/messages`, { content });
@@ -81,7 +91,30 @@ export default function ChatDetailPage() {
     }
   };
 
-  const isOwn = (senderId: string) => senderId?.toString() === user?.id?.toString();
+  const isOwn = (msg: Message) => {
+    const senderId = msg.sender_id || msg.senderId;
+    return senderId?.toString() === user?.id?.toString();
+  };
+
+  const getMessageContent = (msg: Message) => {
+    return msg.content || msg.text || msg.message || '';
+  };
+
+  const getMessageDate = (msg: Message) => {
+    const dateStr = msg.created_at || msg.createdAt || msg.timestamp;
+    if (!dateStr) return '';
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return '';
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '';
+    }
+  };
+
+  const getSenderId = (msg: Message) => {
+    return (msg.sender_id || msg.senderId)?.toString() || '';
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-black">
@@ -114,20 +147,33 @@ export default function ChatDetailPage() {
               <p className="text-sm text-white/40">Send a message to start</p>
             </div>
           ) : (
-            messages.map((msg, i) => (
-              <div key={msg.id} className={`flex ${isOwn(msg.sender_id) ? 'justify-end' : 'justify-start'} items-end gap-2`}>
-                {!isOwn(msg.sender_id) && i > 0 && messages[i-1].sender_id !== msg.sender_id && (
-                  <img src={chat?.participants?.find((p: any) => p.id?.toString() === msg.sender_id)?.profile_picture || '/default-avatar.svg'} alt="" className="w-8 h-8 rounded-full" />
-                )}
-                {!isOwn(msg.sender_id) && (i === 0 || messages[i-1].sender_id === msg.sender_id) && <div className="w-8" />}
-                <div className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${isOwn(msg.sender_id) ? 'bg-blue-500 text-white rounded-br-md' : 'bg-white/10 text-white rounded-bl-md'}`}>
-                  <p className="text-[15px]">{msg.content}</p>
-                  <span className={`text-[10px] mt-1 block ${isOwn(msg.sender_id) ? 'text-white/70' : 'text-white/50'}`}>
-                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+            messages.map((msg, i) => {
+              const own = isOwn(msg);
+              const prevMsg = i > 0 ? messages[i-1] : null;
+              const showAvatar = !own && prevMsg && !isOwn(prevMsg);
+              
+              return (
+                <div key={msg.id} className={`flex ${own ? 'justify-end' : 'justify-start'} items-end gap-2`}>
+                  {!own && (
+                    <div className="w-8">
+                      {showAvatar && (
+                        <img 
+                          src={chat?.participants?.find((p: any) => p.id?.toString() === getSenderId(msg))?.profile_picture || '/default-avatar.svg'} 
+                          alt="" 
+                          className="w-8 h-8 rounded-full" 
+                        />
+                      )}
+                    </div>
+                  )}
+                  <div className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${own ? 'bg-blue-500 text-white rounded-br-md' : 'bg-white/10 text-white rounded-bl-md'}`}>
+                    <p className="text-[15px]">{getMessageContent(msg)}</p>
+                    <span className={`text-[10px] mt-1 block ${own ? 'text-white/70' : 'text-white/50'}`}>
+                      {getMessageDate(msg)}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
           <div ref={messagesEndRef} />
         </div>
