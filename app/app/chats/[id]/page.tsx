@@ -412,27 +412,10 @@ export default function ChatDetailPage() {
       </header>
 
       {/* E2EE Setup Banner */}
-      {!isE2EEEnabled && (
-        <div className="fixed top-[88px] left-0 right-0 z-30 bg-yellow-500/10 border-b border-yellow-500/30 px-4 py-2">
-          <div className="max-w-lg mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <span className="text-yellow-400 text-sm">Enable end-to-end encryption</span>
-            </div>
-            <button
-              onClick={() => router.push('/app/e2ee-setup')}
-              className="text-yellow-400 text-sm font-medium hover:text-yellow-300 underline"
-            >
-              Set up
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Messages */}
-      <div className={`flex-1 overflow-y-auto px-4 pb-24 ${!isE2EEEnabled ? 'pt-40' : 'pt-32'}`}>
+      <div className="flex-1 overflow-y-auto pt-32 pb-24 px-4">
         <div className="max-w-lg mx-auto space-y-4">
           {loading ? (
             <div className="space-y-4">

@@ -47,8 +47,15 @@ export default function LoginPage() {
             await CryptoService.decryptIdentityFromServer(password);
             router.push('/app/chats');
           } catch {
-            // No identity on server, redirect to setup
-            router.push('/app/e2ee-setup');
+            // No identity on server, create one automatically with login password
+            try {
+              await CryptoService.initializeIdentity(password);
+              router.push('/app/chats');
+            } catch (err) {
+              console.error('Failed to create E2EE identity:', err);
+              // Continue without E2EE
+              router.push('/app/chats');
+            }
           }
         } else {
           router.push('/app/chats');
