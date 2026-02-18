@@ -68,6 +68,24 @@ class WebSocketServiceClass {
     this.send({ type: 'message_send', ...data });
   }
 
+  sendEncryptedMessage(data: { 
+    chatId: string; 
+    content?: string; 
+    deviceId: string; 
+    tempId?: string;
+    envelopes: any[];
+  }): void {
+    this.send({ 
+      type: 'message_send', 
+      chatId: data.chatId,
+      content: data.content,
+      deviceId: data.deviceId,
+      tempId: data.tempId,
+      envelopes: data.envelopes,
+      isEncrypted: true
+    });
+  }
+
   sendTyping(chatId: string): void {
     this.send({ type: 'typing', chatId });
   }

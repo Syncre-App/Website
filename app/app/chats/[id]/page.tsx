@@ -6,6 +6,7 @@ import { useChatContext } from '../../../context/ChatContext';
 import { ApiService } from '../../../services/ApiService';
 import { WebSocketService } from '../../../services/WebSocketService';
 import { StorageService } from '../../../services/StorageService';
+import { CryptoService, EnvelopeEntry } from '../../../services/CryptoService';
 
 interface Message {
   id: string | number;
@@ -19,7 +20,7 @@ interface Message {
   timestamp?: string;
   is_encrypted?: boolean;
   isEncrypted?: boolean;
-  envelopes?: any[];
+  envelopes?: EnvelopeEntry[];
   sender_identity_key?: string;
   senderName?: string;
   senderAvatar?: string;
@@ -27,6 +28,7 @@ interface Message {
   attachments?: any[];
   isDeleted?: boolean;
   reply?: any;
+  chatId?: string | number;
 }
 
 export default function ChatDetailPage() {
@@ -36,8 +38,10 @@ export default function ChatDetailPage() {
   const { user, chats, userStatuses } = useChatContext();
   
   const [messages, setMessages] = useState<Message[]>([]);
+  const [decryptedMessages, setDecryptedMessages] = useState<Record<string, string>>({});
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isE2EEEnabled, setIsE2EEEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const tempIdCounter = useRef(0);
 
@@ -54,6 +58,43 @@ export default function ChatDetailPage() {
     return otherParticipant?.username || 'Unknown';
   };
 
+  // Check E2EE status on mount
+  useEffect(() => {
+    const checkE2EE = async () => {
+      const hasIdentity = await CryptoService.hasIdentity();
+      setIsE2EEEnabled(hasIdentity);
+    };
+    checkE2EE();
+  }, []);
+
+  // Decrypt message helper
+  const decryptMessageContent = async (msg: Message): Promise<string | null> => {
+    if (!msg.envelopes || msg.envelopes.length === 0) {
+      return msg.content || msg.text || msg.message || null;
+    }
+
+    // Try to find envelope for current user
+    const userId = user?.id?.toString();
+    const envelope = msg.envelopes.find(e => e.recipientId === userId);
+    
+    if (!envelope) {
+      console.log('[Chat] No envelope found for current user');
+      return null;
+    }
+
+    try {
+      const decrypted = await CryptoService.decryptMessage({
+        envelope,
+        senderId: (msg.senderId || msg.sender_id)?.toString() || '',
+        chatId: chatId.toString(),
+      });
+      return decrypted;
+    } catch (error) {
+      console.error('[Chat] Failed to decrypt message:', error);
+      return null;
+    }
+  };
+
   // Load messages from API
   useEffect(() => {
     const loadMessages = async () => {
@@ -62,6 +103,20 @@ export default function ChatDetailPage() {
         if (response.success && response.data?.messages) {
           const msgs = response.data.messages;
           setMessages(msgs);
+          
+          // Decrypt encrypted messages
+          const decryptedCache: Record<string, string> = {};
+          for (const msg of msgs) {
+            if ((msg.is_encrypted || msg.isEncrypted) && msg.envelopes) {
+              const decrypted = await decryptMessageContent(msg);
+              if (decrypted) {
+                decryptedCache[msg.id.toString()] = decrypted;
+              }
+            } else if (msg.content) {
+              decryptedCache[msg.id.toString()] = msg.content;
+            }
+          }
+          setDecryptedMessages(decryptedCache);
         }
       } catch (error) {
         console.error('Failed to load messages:', error);
@@ -79,11 +134,11 @@ export default function ChatDetailPage() {
     return () => {
       WebSocketService.leaveChat(chatId);
     };
-  }, [chatId]);
+  }, [chatId, user?.id]);
 
   // Listen for new messages via WebSocket
   useEffect(() => {
-    const unsubscribe = WebSocketService.addMessageListener((wsMsg: any) => {
+    const unsubscribe = WebSocketService.addMessageListener(async (wsMsg: any) => {
       if (wsMsg.type === 'new_message' && wsMsg.chatId?.toString() === chatId) {
         const newMsg: Message = {
           id: wsMsg.messageId || wsMsg.id,
@@ -97,14 +152,23 @@ export default function ChatDetailPage() {
           attachments: wsMsg.attachments || [],
         };
         
+        // Decrypt if encrypted
+        if (wsMsg.envelopes && wsMsg.envelopes.length > 0) {
+          const decrypted = await decryptMessageContent(newMsg);
+          if (decrypted) {
+            setDecryptedMessages(prev => ({
+              ...prev,
+              [newMsg.id.toString()]: decrypted
+            }));
+          }
+        }
+        
         setMessages(prev => {
-          // Check if we already have this message (by temp ID or real ID)
           const exists = prev.some(m => 
             m.id.toString() === newMsg.id.toString() || 
             (wsMsg.tempId && m.id.toString() === wsMsg.tempId.toString())
           );
           if (exists) {
-            // Replace temp message with real one
             return prev.map(m => 
               (wsMsg.tempId && m.id.toString() === wsMsg.tempId.toString()) ||
               m.id.toString() === newMsg.id.toString()
@@ -115,7 +179,6 @@ export default function ChatDetailPage() {
           return [...prev, newMsg];
         });
       } else if (wsMsg.type === 'message_ack' && wsMsg.tempId) {
-        // Update temp message with real ID
         setMessages(prev => prev.map(m => 
           m.id.toString() === wsMsg.tempId.toString()
             ? { ...m, id: wsMsg.messageId || m.id }
@@ -125,7 +188,7 @@ export default function ChatDetailPage() {
     });
 
     return () => unsubscribe();
-  }, [chatId]);
+  }, [chatId, user?.id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -150,10 +213,59 @@ export default function ChatDetailPage() {
       createdAt: new Date().toISOString(),
     };
     setMessages(prev => [...prev, tempMsg]);
+    setDecryptedMessages(prev => ({ ...prev, [tempId]: content }));
 
-    // Send via WebSocket only (no API endpoint for sending)
-    const deviceId = await StorageService.getDeviceId();
-    WebSocketService.sendMessage({ chatId, content, deviceId, tempId });
+    try {
+      const deviceId = await StorageService.getDeviceId();
+      
+      if (isE2EEEnabled && chat?.participants) {
+        // Get public keys of all participants
+        const recipientKeys: Array<{ userId: string; publicKey: string }> = [];
+        for (const participant of chat.participants) {
+          if (participant.id?.toString() !== user?.id?.toString()) {
+            try {
+              const response = await ApiService.get(`/keys/identity/public/${participant.id}`);
+              if (response.success && response.data?.publicKey) {
+                recipientKeys.push({
+                  userId: participant.id.toString(),
+                  publicKey: response.data.publicKey
+                });
+              }
+            } catch (error) {
+              console.warn(`[Chat] Failed to get public key for user ${participant.id}:`, error);
+            }
+          }
+        }
+
+        if (recipientKeys.length > 0) {
+          // Encrypt message
+          const encrypted = await CryptoService.encryptMessage({
+            message: content,
+            chatId: chatId.toString(),
+            recipientPublicKeys: recipientKeys,
+            senderDeviceId: deviceId,
+          });
+
+          if (encrypted) {
+            WebSocketService.sendEncryptedMessage({
+              chatId,
+              content,
+              deviceId,
+              tempId,
+              envelopes: encrypted.envelopes,
+            });
+            return;
+          }
+        }
+      }
+
+      // Fall back to unencrypted
+      WebSocketService.sendMessage({ chatId, content, deviceId, tempId });
+    } catch (error) {
+      console.error('[Chat] Failed to send message:', error);
+      // Remove temp message on error
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+    }
   };
 
   const isOwn = (msg: Message) => {
@@ -178,23 +290,28 @@ export default function ChatDetailPage() {
   };
 
   const getMessageContent = (msg: Message) => {
-    // If message has content, show it
+    // Check decrypted cache first
+    const decrypted = decryptedMessages[msg.id.toString()];
+    if (decrypted !== undefined) {
+      return decrypted;
+    }
+    
+    // If not in cache, check if it's encrypted
+    if ((msg.is_encrypted || msg.isEncrypted) && msg.envelopes?.length > 0) {
+      return '🔒 Decrypting...';
+    }
+    
+    // Plain text message
     if (msg.content && msg.content.trim()) {
       return msg.content;
     }
     
-    // If encrypted and has envelopes, show encrypted indicator
-    if ((msg.is_encrypted || msg.isEncrypted) && msg.envelopes?.length > 0) {
-      return '🔒 Encrypted message';
-    }
-    
-    // Check other possible content fields
     const possibleContent = msg.text || msg.message;
     if (possibleContent && possibleContent.trim()) {
       return possibleContent;
     }
     
-    // If has attachments, show attachment indicator
+    // Attachments
     if (msg.attachments && msg.attachments.length > 0) {
       const attachmentCount = msg.attachments.length;
       return `📎 ${attachmentCount} attachment${attachmentCount > 1 ? 's' : ''}`;
@@ -249,6 +366,14 @@ export default function ChatDetailPage() {
               }
             </p>
           </div>
+          
+          {isE2EEEnabled && (
+            <div className="flex items-center text-green-500" title="End-to-end encryption enabled">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+          )}
         </div>
       </header>
 
@@ -280,6 +405,7 @@ export default function ChatDetailPage() {
               const showAvatar = !own && prevMsg && !isOwn(prevMsg);
               const content = getMessageContent(msg);
               const isDeleted = msg.isDeleted;
+              const isEncrypted = (msg.is_encrypted || msg.isEncrypted) && msg.envelopes?.length > 0;
               
               return (
                 <div key={msg.id} className={`flex ${own ? 'justify-end' : 'justify-start'} items-end gap-2`}>
@@ -306,9 +432,16 @@ export default function ChatDetailPage() {
                         <span className="italic text-white/50">(No content)</span>
                       )}
                     </p>
-                    <span className={`text-[10px] mt-1 block ${own ? 'text-white/70' : 'text-white/50'}`}>
-                      {getMessageDate(msg)}
-                    </span>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className={`text-[10px] ${own ? 'text-white/70' : 'text-white/50'}`}>
+                        {getMessageDate(msg)}
+                      </span>
+                      {isEncrypted && (
+                        <svg className="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -325,7 +458,7 @@ export default function ChatDetailPage() {
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Message..."
+            placeholder={isE2EEEnabled ? "🔒 Encrypted message..." : "Message..."}
             className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-blue-500"
           />
           <button 
