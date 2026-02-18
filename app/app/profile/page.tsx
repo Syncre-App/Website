@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChatContext } from '../../context/ChatContext';
 import { StorageService } from '../../services/StorageService';
@@ -11,9 +11,20 @@ export default function ProfilePage() {
   const { user, isOnline } = useChatContext();
   const [showLogout, setShowLogout] = useState(false);
 
-  const handleLogout = () => {
-    StorageService.clearAll();
-    window.location.href = '/';
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await StorageService.getAuthToken();
+      if (!token) {
+        router.push('/login');
+      }
+    };
+    checkAuth();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await StorageService.clearAll();
+    window.location.href = '/login';
   };
 
   return (

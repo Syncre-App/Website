@@ -536,7 +536,17 @@ class CryptoServiceClass {
     try {
       const { envelope, chatId } = params;
       
+      console.log('[CryptoService] Decrypting message in chat:', chatId);
+      console.log('[CryptoService] Envelope data:', {
+        recipientId: envelope.recipientId,
+        alg: envelope.alg,
+        hasSenderKey: !!envelope.senderIdentityKey,
+        keyVersion: envelope.keyVersion,
+      });
+      
       const identity = await ensureIdentityAvailable();
+      console.log('[CryptoService] Identity loaded, public key:', identity.publicKey.substring(0, 20) + '...');
+      
       const naclLib = await loadNacl();
       
       // Extract ephemeral public key from sender
@@ -549,14 +559,21 @@ class CryptoServiceClass {
         return null;
       }
       
+      console.log('[CryptoService] Sender public key length:', senderPublicKey.length);
+      
       const privateKey = fromBase64(identity.privateKey);
+      console.log('[CryptoService] Private key loaded, length:', privateKey.length);
       
       // Perform X25519 key exchange
       const sharedSecret = naclLib.box.before(senderPublicKey, privateKey);
+      console.log('[CryptoService] Shared secret derived, length:', sharedSecret.length);
+      
       const symmetricKey = await deriveSymmetricKey(sharedSecret, chatId);
+      console.log('[CryptoService] Symmetric key derived, length:', symmetricKey.length);
       
       // Decrypt
       const nonce = fromBase64(envelope.nonce);
+      console.log('[CryptoService] Nonce length:', nonce.length);
       const ciphertext = fromBase64(envelope.payload);
       
       const plaintext = await decryptWithKey(ciphertext, symmetricKey, nonce);

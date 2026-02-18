@@ -47,6 +47,17 @@ export default function ChatDetailPage() {
 
   const chat = chats.find(c => c.id?.toString() === chatId);
 
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await StorageService.getAuthToken();
+      if (!token) {
+        router.push('/login');
+      }
+    };
+    checkAuth();
+  }, [router]);
+
   // Get other participant for 1-on-1 chat
   const otherParticipant = chat?.participants?.find(
     (p: any) => p.id?.toString() !== user?.id?.toString()
@@ -69,29 +80,52 @@ export default function ChatDetailPage() {
 
   // Decrypt message helper
   const decryptMessageContent = async (msg: Message): Promise<string | null> => {
+    console.log('[Chat] Attempting to decrypt message:', msg.id, 'Envelopes:', msg.envelopes?.length);
+    
+    // Check if E2EE is enabled
+    const hasIdentity = await CryptoService.hasIdentity();
+    if (!hasIdentity) {
+      console.log('[Chat] No identity key, cannot decrypt');
+      return '🔒 Encrypted message (set up E2EE to read)';
+    }
+    
     if (!msg.envelopes || msg.envelopes.length === 0) {
+      console.log('[Chat] No envelopes, using plain content');
       return msg.content || msg.text || msg.message || null;
     }
 
     // Try to find envelope for current user
     const userId = user?.id?.toString();
+    console.log('[Chat] Looking for envelope for user:', userId);
+    console.log('[Chat] Available envelopes:', msg.envelopes.map(e => ({ recipientId: e.recipientId, alg: e.alg })));
+    
     const envelope = msg.envelopes.find(e => e.recipientId === userId);
     
     if (!envelope) {
-      console.log('[Chat] No envelope found for current user');
-      return null;
+      console.log('[Chat] No envelope found for current user:', userId);
+      return '🔒 Cannot decrypt (no envelope for this device)';
     }
 
+    console.log('[Chat] Found envelope:', envelope);
+
     try {
+      const senderId = (msg.senderId || msg.sender_id)?.toString() || '';
+      console.log('[Chat] Decrypting with sender:', senderId, 'chat:', chatId);
+      
       const decrypted = await CryptoService.decryptMessage({
         envelope,
-        senderId: (msg.senderId || msg.sender_id)?.toString() || '',
+        senderId,
         chatId: chatId.toString(),
       });
+      
+      console.log('[Chat] Decryption result:', decrypted ? 'success' : 'failed');
       return decrypted;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Chat] Failed to decrypt message:', error);
-      return null;
+      if (error?.message?.includes('Identity key not initialized')) {
+        return '🔒 Encrypted message (set up E2EE to read)';
+      }
+      return '🔒 Decryption failed';
     }
   };
 
@@ -377,8 +411,28 @@ export default function ChatDetailPage() {
         </div>
       </header>
 
+      {/* E2EE Setup Banner */}
+      {!isE2EEEnabled && (
+        <div className="fixed top-[88px] left-0 right-0 z-30 bg-yellow-500/10 border-b border-yellow-500/30 px-4 py-2">
+          <div className="max-w-lg mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span className="text-yellow-400 text-sm">Enable end-to-end encryption</span>
+            </div>
+            <button
+              onClick={() => router.push('/app/e2ee-setup')}
+              className="text-yellow-400 text-sm font-medium hover:text-yellow-300 underline"
+            >
+              Set up
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto pt-32 pb-24 px-4">
+      <div className={`flex-1 overflow-y-auto px-4 pb-24 ${!isE2EEEnabled ? 'pt-40' : 'pt-32'}`}>
         <div className="max-w-lg mx-auto space-y-4">
           {loading ? (
             <div className="space-y-4">

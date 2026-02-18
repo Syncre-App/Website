@@ -6,6 +6,7 @@ import { RiMessage3Line, RiMessage3Fill } from 'react-icons/ri';
 import { HiUsers, HiOutlineUsers } from 'react-icons/hi';
 import { HiOutlineUserCircle, HiUserCircle } from 'react-icons/hi2';
 import { ChatProvider, useChatContext } from '../context/ChatContext';
+import { StorageService } from '../services/StorageService';
 
 interface Tab {
   id: string;
@@ -43,8 +44,31 @@ function TabLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { totalUnreadChats, incomingRequests } = useChatContext();
+  const [isAuthenticated, setIsAuthenticated] = React.useState<boolean | null>(null);
+
+  // Check authentication
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const token = await StorageService.getAuthToken();
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+      setIsAuthenticated(true);
+    };
+    checkAuth();
+  }, [router]);
 
   const activeTab = tabs.find(tab => pathname?.startsWith(`/app${tab.path}`)) || tabs[0];
+
+  // Show loading while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-black">

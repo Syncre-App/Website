@@ -1,12 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChatContext } from '../../context/ChatContext';
+import { StorageService } from '../../services/StorageService';
 
 export default function ChatsPage() {
   const router = useRouter();
   const { user, chats, chatsLoading, chatUnreadCounts, chatStreaks, isOnline } = useChatContext();
+
+  useEffect(() => {
+    // Check authentication
+    const checkAuth = async () => {
+      const token = await StorageService.getAuthToken();
+      if (!token) {
+        router.push('/login');
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   const handleChatClick = (chatId: string | number) => {
     router.push(`/app/chats/${chatId}`);

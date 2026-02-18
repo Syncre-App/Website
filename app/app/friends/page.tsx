@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useChatContext } from '../../context/ChatContext';
 import { ApiService } from '../../services/ApiService';
+import { StorageService } from '../../services/StorageService';
 
 interface User {
   id: string;
@@ -11,11 +13,23 @@ interface User {
 }
 
 export default function FriendsPage() {
+  const router = useRouter();
   const { incomingRequests, outgoingRequests, userStatuses, loadFriendData, loadChats } = useChatContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = await StorageService.getAuthToken();
+      if (!token) {
+        router.push('/login');
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
