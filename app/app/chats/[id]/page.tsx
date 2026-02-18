@@ -42,7 +42,12 @@ export default function ChatDetailPage() {
   useEffect(() => {
     const loadMessages = async () => {
       const response = await ApiService.get(`/chat/${chatId}/messages?limit=50`);
-      if (response.success) setMessages(response.data?.messages || []);
+      console.log('Messages API response:', response);
+      if (response.success) {
+        const msgs = response.data?.messages || [];
+        console.log('First message:', msgs[0]);
+        setMessages(msgs);
+      }
       setLoading(false);
     };
     
@@ -97,7 +102,13 @@ export default function ChatDetailPage() {
   };
 
   const getMessageContent = (msg: Message) => {
-    return msg.content || msg.text || msg.message || '';
+    const content = msg.content || msg.text || msg.message;
+    if (!content) {
+      // Debug: show available fields
+      console.log('Message without content:', msg);
+      return JSON.stringify(msg).slice(0, 50) + '...';
+    }
+    return content;
   };
 
   const getMessageDate = (msg: Message) => {
@@ -151,6 +162,7 @@ export default function ChatDetailPage() {
               const own = isOwn(msg);
               const prevMsg = i > 0 ? messages[i-1] : null;
               const showAvatar = !own && prevMsg && !isOwn(prevMsg);
+              const content = getMessageContent(msg);
               
               return (
                 <div key={msg.id} className={`flex ${own ? 'justify-end' : 'justify-start'} items-end gap-2`}>
@@ -166,7 +178,7 @@ export default function ChatDetailPage() {
                     </div>
                   )}
                   <div className={`max-w-[70%] px-4 py-2.5 rounded-2xl ${own ? 'bg-blue-500 text-white rounded-br-md' : 'bg-white/10 text-white rounded-bl-md'}`}>
-                    <p className="text-[15px]">{getMessageContent(msg)}</p>
+                    <p className="text-[15px] break-words">{content || <span className="italic text-white/50">(No content)</span>}</p>
                     <span className={`text-[10px] mt-1 block ${own ? 'text-white/70' : 'text-white/50'}`}>
                       {getMessageDate(msg)}
                     </span>
