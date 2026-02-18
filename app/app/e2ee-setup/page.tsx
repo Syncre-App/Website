@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CryptoService } from '../services/CryptoService';
-import { ApiService } from '../services/ApiService';
+import { CryptoService } from '../../services/CryptoService';
+import { ApiService } from '../../services/ApiService';
 
 export default function E2EESetupPage() {
   const router = useRouter();
